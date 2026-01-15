@@ -1,0 +1,4 @@
+<Solution>
+  <!-- <Project Path="Cyclotron.FileSystemAdapter/Cyclotron.FileSystemAdapter.csproj" /> -->
+  <Project Path="Cyclotron.Utilities/Cyclotron.Utilities.csproj" />
+</Solution>
