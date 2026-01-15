@@ -2,4 +2,11 @@
     <PropertyGroup>
         <EnableWindowsTargeting>true</EnableWindowsTargeting>
     </PropertyGroup>
+
+    <!-- Documentation Properties -->
+    <PropertyGroup>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <NoWarn>$(NoWarn);CS1591</NoWarn>
+        <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+    </PropertyGroup>
 </Project>

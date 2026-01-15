@@ -416,3 +416,10 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# DocFX
+docs/_site/
+docs/api/.manifest
+docs/api/*.yml
+docs/api/.gitignore
+docs/obj/
