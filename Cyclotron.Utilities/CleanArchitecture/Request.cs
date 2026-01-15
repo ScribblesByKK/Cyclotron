@@ -58,18 +58,15 @@ public interface IUsecaseRequest
 /// <param name="cancellationToken">The cancellation token for the request (optional).</param>
 public abstract class UsecaseRequest(RequestType requestType, string userId, CancellationToken cancellationToken = default) : IUsecaseRequest
 {
+    /// <inheritdoc/>
+    public RequestType RequestType { get => _requestType; }
     private readonly RequestType _requestType = requestType;
 
     /// <inheritdoc/>
-    public RequestType RequestType { get => _requestType; }
-
+    public string UserId { get => _userId; }
     private readonly string _userId = userId;
 
     /// <inheritdoc/>
-    public string UserId { get => _userId; }
-
-    private readonly CancellationToken _cancellationToken = cancellationToken;
-
-    /// <inheritdoc/>
     public CancellationToken CancellationToken { get => _cancellationToken; }
+    private readonly CancellationToken _cancellationToken = cancellationToken;
 }
