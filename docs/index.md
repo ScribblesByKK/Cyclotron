@@ -7,6 +7,9 @@ Welcome to the Cyclotron documentation. Cyclotron is a comprehensive .NET librar
 ###### Cyclotron.Utilities
 Core utilities and clean architecture components for .NET applications.
 
+###### Cyclotron.Telemetry
+Comprehensive telemetry and logging infrastructure with Serilog integration, automatic caller information enrichment, and module-based tagging.
+
 ###### Cyclotron.FileSystemAdapter
 Cross-platform file system abstraction with WinUI support for Windows applications.
 

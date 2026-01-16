@@ -1,6 +1,8 @@
 <Project>
     <PropertyGroup>
         <EnableWindowsTargeting>true</EnableWindowsTargeting>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>disable</Nullable>
     </PropertyGroup>
 
     <!-- Documentation Properties -->
