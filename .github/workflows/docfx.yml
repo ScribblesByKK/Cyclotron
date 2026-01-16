@@ -29,6 +29,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -52,11 +55,16 @@ jobs:
         run: |
           msbuild Cyclotron.slnx /p:Configuration=Release /p:Platform=x64
 
-      - name: Build Documentation
+      - name: Build Documentation Metadata
         shell: pwsh
         run: |
           cd docs
           docfx metadata docfx.json
+
+      - name: Build Documentation Site
+        shell: pwsh
+        run: |
+          cd docs
           docfx build docfx.json --warningsAsErrors true
           if (-not (Test-Path "_site")) {
             Write-Error "Documentation site was not generated"
