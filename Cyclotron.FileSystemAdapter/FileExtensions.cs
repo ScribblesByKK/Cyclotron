@@ -8,7 +8,7 @@ public static class FileExtensions
     /// <summary>
     /// A static instance of the <see cref="IFileHandler"/> used for all file operations.
     /// </summary>
-    private static readonly IFileHandler _fileHandler = new();
+    private static readonly IFileHandler _fileHandler = FileSystemProvider.Instance.GetService<IFileHandler>();
 
     /// <summary>
     /// Asynchronously copies a source file and replaces the destination file.
@@ -136,14 +136,4 @@ public static class FileExtensions
     {
         return _fileHandler.RenameAsync(file, desiredName, option);
     }
-
-    /// <summary>
-    /// Converts a <see cref="StorageFile"/> to an <see cref="IFile"/> instance.
-    /// </summary>
-    /// <param name="file">The <see cref="StorageFile"/> to convert.</param>
-    /// <returns>An <see cref="IFile"/> instance wrapping the storage file.</returns>
-    // public static IFile AsIFile(this StorageFile file)
-    // {
-    //     return new WinUIFile(file);
-    // }
 }

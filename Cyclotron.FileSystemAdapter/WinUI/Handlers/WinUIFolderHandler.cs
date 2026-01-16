@@ -1,4 +1,4 @@
-using Windows.Storage;
+using Cyclotron.FileSystemAdapter.WinUI.Models;
 
 namespace Cyclotron.FileSystemAdapter.WinUI.Handlers;
 
@@ -18,7 +18,7 @@ internal class WinUIFolderHandler : IFolderHandler
             throw new ArgumentException("Folder must be a WinUIFolder instance", nameof(folder));
         }
 
-        var storageFolder = await StorageFolder.GetFolderFromPathAsync(winUIFolder.Path);
+        var storageFolder = await Windows.Storage.StorageFolder.GetFolderFromPathAsync(winUIFolder.Path);
         await storageFolder.CreateFileAsync(desiredName);
     }
 
@@ -30,7 +30,7 @@ internal class WinUIFolderHandler : IFolderHandler
             throw new ArgumentException("Folder must be a WinUIFolder instance", nameof(folder));
         }
 
-        var storageFolder = await StorageFolder.GetFolderFromPathAsync(winUIFolder.Path);
+        var storageFolder = await Windows.Storage.StorageFolder.GetFolderFromPathAsync(winUIFolder.Path);
         var winUIOption = ConvertCreationCollisionOption(options);
         await storageFolder.CreateFileAsync(desiredName, winUIOption);
     }
@@ -43,7 +43,7 @@ internal class WinUIFolderHandler : IFolderHandler
             throw new ArgumentException("Folder must be a WinUIFolder instance", nameof(folder));
         }
 
-        var storageFolder = await StorageFolder.GetFolderFromPathAsync(winUIFolder.Path);
+        var storageFolder = await Windows.Storage.StorageFolder.GetFolderFromPathAsync(winUIFolder.Path);
         await storageFolder.CreateFolderAsync(desiredName);
     }
 
@@ -55,7 +55,7 @@ internal class WinUIFolderHandler : IFolderHandler
             throw new ArgumentException("Folder must be a WinUIFolder instance", nameof(folder));
         }
 
-        var storageFolder = await StorageFolder.GetFolderFromPathAsync(winUIFolder.Path);
+        var storageFolder = await Windows.Storage.StorageFolder.GetFolderFromPathAsync(winUIFolder.Path);
         var winUIOption = ConvertCreationCollisionOption(options);
         await storageFolder.CreateFolderAsync(desiredName, winUIOption);
     }
@@ -68,7 +68,7 @@ internal class WinUIFolderHandler : IFolderHandler
             throw new ArgumentException("Folder must be a WinUIFolder instance", nameof(folder));
         }
 
-        var storageFolder = await StorageFolder.GetFolderFromPathAsync(winUIFolder.Path);
+        var storageFolder = await Windows.Storage.StorageFolder.GetFolderFromPathAsync(winUIFolder.Path);
         await storageFolder.DeleteAsync();
     }
 
@@ -80,7 +80,7 @@ internal class WinUIFolderHandler : IFolderHandler
             throw new ArgumentException("Folder must be a WinUIFolder instance", nameof(folder));
         }
 
-        var storageFolder = await StorageFolder.GetFolderFromPathAsync(winUIFolder.Path);
+        var storageFolder = await Windows.Storage.StorageFolder.GetFolderFromPathAsync(winUIFolder.Path);
         var winUIOption = ConvertStorageDeletionOption(option);
         await storageFolder.DeleteAsync(winUIOption);
     }
@@ -93,7 +93,7 @@ internal class WinUIFolderHandler : IFolderHandler
             throw new ArgumentException("Folder must be a WinUIFolder instance", nameof(folder));
         }
 
-        var storageFolder = await StorageFolder.GetFolderFromPathAsync(winUIFolder.Path);
+        var storageFolder = await Windows.Storage.StorageFolder.GetFolderFromPathAsync(winUIFolder.Path);
         var file = await storageFolder.GetFileAsync(name);
         return new WinUIFile(file);
     }
@@ -106,7 +106,7 @@ internal class WinUIFolderHandler : IFolderHandler
             throw new ArgumentException("Folder must be a WinUIFolder instance", nameof(folder));
         }
 
-        var storageFolder = await StorageFolder.GetFolderFromPathAsync(winUIFolder.Path);
+        var storageFolder = await Windows.Storage.StorageFolder.GetFolderFromPathAsync(winUIFolder.Path);
         var files = await storageFolder.GetFilesAsync();
         return files.Select(f => (IFile)new WinUIFile(f)).ToList();
     }
@@ -119,7 +119,7 @@ internal class WinUIFolderHandler : IFolderHandler
             throw new ArgumentException("Folder must be a WinUIFolder instance", nameof(folder));
         }
 
-        var storageFolder = await StorageFolder.GetFolderFromPathAsync(winUIFolder.Path);
+        var storageFolder = await Windows.Storage.StorageFolder.GetFolderFromPathAsync(winUIFolder.Path);
         var subFolder = await storageFolder.GetFolderAsync(name);
         return new WinUIFolder(subFolder);
     }
@@ -127,7 +127,7 @@ internal class WinUIFolderHandler : IFolderHandler
     /// <inheritdoc/>
     public async Task<IFolder> GetFolderFromPathAsync(string path)
     {
-        var folder = await StorageFolder.GetFolderFromPathAsync(path);
+        var folder = await Windows.Storage.StorageFolder.GetFolderFromPathAsync(path);
         return new WinUIFolder(folder);
     }
 
@@ -139,7 +139,7 @@ internal class WinUIFolderHandler : IFolderHandler
             throw new ArgumentException("Folder must be a WinUIFolder instance", nameof(folder));
         }
 
-        var storageFolder = await StorageFolder.GetFolderFromPathAsync(winUIFolder.Path);
+        var storageFolder = await Windows.Storage.StorageFolder.GetFolderFromPathAsync(winUIFolder.Path);
         var folders = await storageFolder.GetFoldersAsync();
         return folders.Select(f => (IFolder)new WinUIFolder(f)).ToList();
     }
@@ -152,7 +152,7 @@ internal class WinUIFolderHandler : IFolderHandler
             throw new ArgumentException("Folder must be a WinUIFolder instance", nameof(folder));
         }
 
-        var storageFolder = await StorageFolder.GetFolderFromPathAsync(winUIFolder.Path);
+        var storageFolder = await Windows.Storage.StorageFolder.GetFolderFromPathAsync(winUIFolder.Path);
         var item = await storageFolder.GetItemAsync(name);
         return ConvertStorageItem(item);
     }
@@ -165,7 +165,7 @@ internal class WinUIFolderHandler : IFolderHandler
             throw new ArgumentException("Folder must be a WinUIFolder instance", nameof(folder));
         }
 
-        var storageFolder = await StorageFolder.GetFolderFromPathAsync(winUIFolder.Path);
+        var storageFolder = await Windows.Storage.StorageFolder.GetFolderFromPathAsync(winUIFolder.Path);
         var items = await storageFolder.GetItemsAsync();
         return items.Select(ConvertStorageItem).ToList();
     }
@@ -178,7 +178,7 @@ internal class WinUIFolderHandler : IFolderHandler
             throw new ArgumentException("Folder must be a WinUIFolder instance", nameof(folder));
         }
 
-        var storageFolder = await StorageFolder.GetFolderFromPathAsync(winUIFolder.Path);
+        var storageFolder = await Windows.Storage.StorageFolder.GetFolderFromPathAsync(winUIFolder.Path);
         var parentFolder = await storageFolder.GetParentAsync();
         return new WinUIFolder(parentFolder);
     }
@@ -191,7 +191,7 @@ internal class WinUIFolderHandler : IFolderHandler
             throw new ArgumentException("Folder must be a WinUIFolder instance", nameof(folder));
         }
 
-        var storageFolder = await StorageFolder.GetFolderFromPathAsync(winUIFolder.Path);
+        var storageFolder = await Windows.Storage.StorageFolder.GetFolderFromPathAsync(winUIFolder.Path);
         await storageFolder.RenameAsync(desiredName);
     }
 
@@ -203,7 +203,7 @@ internal class WinUIFolderHandler : IFolderHandler
             throw new ArgumentException("Folder must be a WinUIFolder instance", nameof(folder));
         }
 
-        var storageFolder = await StorageFolder.GetFolderFromPathAsync(winUIFolder.Path);
+        var storageFolder = await Windows.Storage.StorageFolder.GetFolderFromPathAsync(winUIFolder.Path);
         var winUIOption = ConvertNameCollisionOption(option);
         await storageFolder.RenameAsync(desiredName, winUIOption);
     }
@@ -216,7 +216,7 @@ internal class WinUIFolderHandler : IFolderHandler
             throw new ArgumentException("Folder must be a WinUIFolder instance", nameof(folder));
         }
 
-        var storageFolder = await StorageFolder.GetFolderFromPathAsync(winUIFolder.Path);
+        var storageFolder = await Windows.Storage.StorageFolder.GetFolderFromPathAsync(winUIFolder.Path);
         var item = await storageFolder.TryGetItemAsync(name);
         return item != null ? ConvertStorageItem(item) : null;
     }
@@ -231,8 +231,8 @@ internal class WinUIFolderHandler : IFolderHandler
     {
         return item switch
         {
-            StorageFile file => new WinUIFile(file),
-            StorageFolder folder => new WinUIFolder(folder),
+            Windows.Storage.StorageFile file => new WinUIFile(file),
+            Windows.Storage.StorageFolder folder => new WinUIFolder(folder),
             _ => throw new NotSupportedException($"Storage item type '{item.GetType().Name}' is not supported")
         };
     }

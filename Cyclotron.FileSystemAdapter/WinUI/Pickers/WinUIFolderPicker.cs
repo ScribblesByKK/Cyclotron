@@ -1,5 +1,4 @@
-using Microsoft.Windows.Storage.Pickers;
-using Windows.Storage;
+using Cyclotron.FileSystemAdapter.WinUI;
 
 namespace Cyclotron.FileSystemAdapter.WinUI.Pickers;
 
@@ -34,7 +33,7 @@ internal class WinUIFolderPicker : IFolderPicker
     /// <inheritdoc/>
     public async Task<IFolder> PickFolderAsync()
     {
-        var folderPicker = new FolderPicker(default)
+        var folderPicker = new Microsoft.Windows.Storage.Pickers.FolderPicker(default)
         {
             CommitButtonText = this.CommitButtonText,
             SuggestedStartLocation = (Microsoft.Windows.Storage.Pickers.PickerLocationId)this.SuggestedStartLocation,
@@ -45,7 +44,7 @@ internal class WinUIFolderPicker : IFolderPicker
         {
             return default;
         }
-        var folder = await StorageFolder.GetFolderFromPathAsync(folderResult.Path);
+        var folder = await Windows.Storage.StorageFolder.GetFolderFromPathAsync(folderResult.Path);
         return folder.AsIFolder();
     }
 }

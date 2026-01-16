@@ -1,3 +1,5 @@
+using Microsoft.VisualBasic;
+
 namespace Cyclotron.FileSystemAdapter;
 
 /// <summary>
@@ -8,7 +10,7 @@ public static class FolderExtensions
     /// <summary>
     /// A static instance of the <see cref="IFolderHandler"/> used for all folder operations.
     /// </summary>
-    private static readonly IFolderHandler _folderHandler = new();
+    private static readonly IFolderHandler _folderHandler = FileSystemProvider.Instance.GetService<IFolderHandler>();
 
     /// <summary>
     /// Asynchronously creates a file in the folder.
@@ -187,14 +189,4 @@ public static class FolderExtensions
     {
         return _folderHandler.TryGetItemAsync(folder, name);
     }
-
-    /// <summary>
-    /// Converts a <see cref="StorageFolder"/> to an <see cref="IFolder"/> instance.
-    /// </summary>
-    /// <param name="folder">The <see cref="StorageFolder"/> to convert.</param>
-    /// <returns>An <see cref="IFolder"/> instance wrapping the storage folder.</returns>
-    // public static IFolder AsIFolder(this StorageFolder folder)
-    // {
-    //     return new WinUIFolder(folder);
-    // }
 }
