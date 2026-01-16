@@ -24,33 +24,49 @@ concurrency:
 jobs:
   build:
     runs-on: windows-latest
-    
+
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '10.0.x'
-        
-    - name: Setup DocFX
-      run: dotnet tool install -g docfx
-      
-    - name: Build Documentation
-      shell: pwsh
-      run: |
-        cd docs
-        docfx docfx.json --warningsAsErrors true
-        if (-not (Test-Path "_site")) {
-          Write-Error "Documentation site was not generated"
-          exit 1
-        }
-        
-    - name: Upload artifact
-      uses: actions/upload-pages-artifact@v3
-      with:
-        path: 'docs/_site'
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+        with:
+          vs-version: "[17.9,)"
+
+      - name: Restore NuGet Packages
+        shell: pwsh
+        run: |
+          nuget restore Cyclotron.slnx
+
+      - name: Setup DocFX
+        run: dotnet tool install -g docfx
+
+      - name: Build Solution
+        shell: pwsh
+        run: |
+          msbuild Cyclotron.slnx /p:Configuration=Release /p:Platform=x64
+
+      - name: Build Documentation
+        shell: pwsh
+        run: |
+          cd docs
+          docfx metadata docfx.json
+          docfx build docfx.json --warningsAsErrors true
+          if (-not (Test-Path "_site")) {
+            Write-Error "Documentation site was not generated"
+            exit 1
+          }
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: "docs/_site"
 
   deploy:
     environment:
@@ -59,8 +75,8 @@ jobs:
     runs-on: windows-latest
     needs: build
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    
+
     steps:
-    - name: Deploy to GitHub Pages
-      id: deployment
-      uses: actions/deploy-pages@v4
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
