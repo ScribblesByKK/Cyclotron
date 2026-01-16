@@ -9,5 +9,6 @@
     <File Path="Directory.Packages.Props" />
   </Folder>
   <Project Path="Cyclotron.FileSystemAdapter/Cyclotron.FileSystemAdapter.csproj" />
+  <Project Path="Cyclotron.Telemetry/Cyclotron.Telemetry.csproj" />
   <Project Path="Cyclotron.Utilities/Cyclotron.Utilities.csproj" />
 </Solution>
