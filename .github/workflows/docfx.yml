@@ -23,7 +23,7 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     
     steps:
     - name: Checkout
@@ -38,16 +38,14 @@ jobs:
       run: dotnet tool install -g docfx
       
     - name: Build Documentation
+      shell: pwsh
       run: |
         cd docs
-        docfx docfx.json --warningsAsErrors false || true
-        
-    - name: Check if site was generated
-      run: |
-        if [ ! -d "docs/_site" ]; then
-          echo "Error: Documentation site was not generated"
+        docfx docfx.json --warningsAsErrors false
+        if (-not (Test-Path "_site")) {
+          Write-Error "Documentation site was not generated"
           exit 1
-        fi
+        }
         
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
@@ -58,7 +56,7 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     
