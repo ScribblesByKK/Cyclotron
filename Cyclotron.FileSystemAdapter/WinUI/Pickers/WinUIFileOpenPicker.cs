@@ -1,5 +1,4 @@
-using Microsoft.Windows.Storage.Pickers;
-using Windows.Storage;
+using Cyclotron.FileSystemAdapter.WinUI;
 
 namespace Cyclotron.FileSystemAdapter.WinUI.Pickers;
 
@@ -34,7 +33,7 @@ internal class WinUIFileOpenPicker : IFileOpenPicker
     /// <inheritdoc/>
     public async Task<IFile> PickSingleFileAsync()
     {
-        var fileOpenPicker = new FileOpenPicker(default)
+        var fileOpenPicker = new Microsoft.Windows.Storage.Pickers.FileOpenPicker(default)
         {
             CommitButtonText = this.CommitButtonText,
             SuggestedStartLocation = (Microsoft.Windows.Storage.Pickers.PickerLocationId)this.SuggestedStartLocation,
@@ -52,14 +51,14 @@ internal class WinUIFileOpenPicker : IFileOpenPicker
             return default;
         }
 
-        var file = await StorageFile.GetFileFromPathAsync(fileResult.Path);
+        var file = await Windows.Storage.StorageFile.GetFileFromPathAsync(fileResult.Path);
         return file.AsIFile();
     }
 
     /// <inheritdoc/>
     public async Task<IList<IFile>> PickMultipleFilesAsync()
     {
-        var fileOpenPicker = new FileOpenPicker(default)
+        var fileOpenPicker = new Microsoft.Windows.Storage.Pickers.FileOpenPicker(default)
         {
             CommitButtonText = this.CommitButtonText,
             SuggestedStartLocation = (Microsoft.Windows.Storage.Pickers.PickerLocationId)this.SuggestedStartLocation,
@@ -82,7 +81,7 @@ internal class WinUIFileOpenPicker : IFileOpenPicker
         {
             if (!string.IsNullOrEmpty(fileResult.Path))
             {
-                var file = await StorageFile.GetFileFromPathAsync(fileResult.Path);
+                var file = await Windows.Storage.StorageFile.GetFileFromPathAsync(fileResult.Path);
                 files.Add(file.AsIFile());
             }
         }

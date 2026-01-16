@@ -1,2 +1,2 @@
 apiRules:
-  - include:
+  - include: {}

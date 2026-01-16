@@ -1,4 +1,4 @@
-namespace Cyclotron.FileSystemAdapter;
+namespace Cyclotron.FileSystemAdapter.Abstractions.Models;
 
 /// <summary>
 /// Specifies the behavior to apply when a file or folder with the same name already exists.

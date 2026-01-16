@@ -1,5 +1,4 @@
-using Microsoft.Windows.Storage.Pickers;
-using Windows.Storage;
+using Cyclotron.FileSystemAdapter.WinUI;
 
 namespace Cyclotron.FileSystemAdapter.WinUI.Pickers;
 
@@ -37,7 +36,7 @@ internal class WinUIFileSavePicker : IFileSavePicker
     /// <inheritdoc/>
     public async Task<IFile> PickSaveFileAsync()
     {
-        var fileSavePicker = new FileSavePicker(default)
+        var fileSavePicker = new Microsoft.Windows.Storage.Pickers.FileSavePicker(default)
         {
             CommitButtonText = this.CommitButtonText,
             SuggestedFileName = this.SuggestedFileName,
@@ -55,7 +54,7 @@ internal class WinUIFileSavePicker : IFileSavePicker
             return default;
         }
 
-        var file = await StorageFile.GetFileFromPathAsync(fileResult.Path);
+        var file = await Windows.Storage.StorageFile.GetFileFromPathAsync(fileResult.Path);
         return file.AsIFile();
     }
 }
