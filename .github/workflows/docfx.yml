@@ -41,7 +41,7 @@ jobs:
       shell: pwsh
       run: |
         cd docs
-        docfx docfx.json --warningsAsErrors false
+        docfx docfx.json --warningsAsErrors true
         if (-not (Test-Path "_site")) {
           Write-Error "Documentation site was not generated"
           exit 1

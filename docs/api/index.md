@@ -7,7 +7,7 @@ This section contains the API documentation for all Cyclotron libraries.
 ### Cyclotron.Utilities
 Core utilities and clean architecture components.
 
-Browse the [Cyclotron.Utilities.CleanArchitecture](Cyclotron.Utilities.CleanArchitecture.yml) namespace for clean architecture patterns and abstractions.
+Browse the [Cyclotron.Utilities.CleanArchitecture](xref:Cyclotron.Utilities.CleanArchitecture) namespace for clean architecture patterns and abstractions.
 
 ### Cyclotron.FileSystemAdapter
 Cross-platform file system abstraction with WinUI support.

@@ -1,4 +1,13 @@
 <Solution>
+  <Configurations>
+    <Platform Name="ARM64" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/_Items/">
+    <File Path="Directory.Build.Props" />
+    <File Path="Directory.Packages.Props" />
+  </Folder>
   <Project Path="Cyclotron.FileSystemAdapter/Cyclotron.FileSystemAdapter.csproj" />
   <Project Path="Cyclotron.Utilities/Cyclotron.Utilities.csproj" />
 </Solution>
