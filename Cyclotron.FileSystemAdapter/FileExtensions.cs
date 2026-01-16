@@ -1,8 +1,4 @@
-using Cyclotron.FileSystemAdapter.WinUI.Handlers;
-using Cyclotron.FileSystemAdapter.WinUI.Models;
-using Windows.Storage;
-
-namespace Cyclotron.FileSystemAdapter.WinUI;
+namespace Cyclotron.FileSystemAdapter;
 
 /// <summary>
 /// Provides extension methods for <see cref="IFile"/> operations in WinUI.
@@ -10,9 +6,9 @@ namespace Cyclotron.FileSystemAdapter.WinUI;
 public static class FileExtensions
 {
     /// <summary>
-    /// A static instance of the <see cref="WinUIFileHandler"/> used for all file operations.
+    /// A static instance of the <see cref="IFileHandler"/> used for all file operations.
     /// </summary>
-    private static readonly WinUIFileHandler _fileHandler = new();
+    private static readonly IFileHandler _fileHandler = new();
 
     /// <summary>
     /// Asynchronously copies a source file and replaces the destination file.
@@ -146,8 +142,8 @@ public static class FileExtensions
     /// </summary>
     /// <param name="file">The <see cref="StorageFile"/> to convert.</param>
     /// <returns>An <see cref="IFile"/> instance wrapping the storage file.</returns>
-    public static IFile AsIFile(this StorageFile file)
-    {
-        return new WinUIFile(file);
-    }
+    // public static IFile AsIFile(this StorageFile file)
+    // {
+    //     return new WinUIFile(file);
+    // }
 }

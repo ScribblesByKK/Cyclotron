@@ -1,4 +1,3 @@
-using Cyclotron.FileSystemAdapter.WinUI.Models;
 using Windows.Storage;
 
 namespace Cyclotron.FileSystemAdapter.WinUI.Handlers;

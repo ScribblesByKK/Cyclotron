@@ -8,7 +8,7 @@ namespace Cyclotron.FileSystemAdapter.WinUI.Models;
 /// <remarks>
 /// This class wraps a <see cref="StorageFile"/> object and provides access to file properties and operations.
 /// </remarks>
-public class WinUIFile : IFile
+internal class WinUIFile : IFile
 {
     /// <inheritdoc/>
     public string Name { get { return _File.Name; } }
