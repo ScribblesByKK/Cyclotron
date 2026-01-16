@@ -3,8 +3,15 @@ using Windows.Storage;
 
 namespace Cyclotron.FileSystemAdapter.WinUI.Handlers;
 
+/// <summary>
+/// WinUI implementation of the <see cref="IFileHandler"/> interface.
+/// </summary>
+/// <remarks>
+/// This class provides file operations for WinUI applications by wrapping Windows.Storage APIs.
+/// </remarks>
 internal class WinUIFileHandler : IFileHandler
 {
+    /// <inheritdoc/>
     public async Task CopyAndReplaceAsync(IFile sourceFile, IFile file)
     {
         if (sourceFile is not WinUIFile winUISourceFile)
@@ -22,6 +29,7 @@ internal class WinUIFileHandler : IFileHandler
         await sourceStorageFile.CopyAndReplaceAsync(targetFile);
     }
 
+    /// <inheritdoc/>
     public async Task CopyAsync(IFile sourceFile, IFolder destinationFolder, string desiredNewName, NameCollisionOption option)
     {
         if (sourceFile is not WinUIFile winUISourceFile)
@@ -40,12 +48,14 @@ internal class WinUIFileHandler : IFileHandler
         await sourceStorageFile.CopyAsync(targetFolder, desiredNewName, winUIOption);
     }
 
+    /// <inheritdoc/>
     public async Task<IFile> GetFileFromPathAsync(string path)
     {
         var file = await StorageFile.GetFileFromPathAsync(path);
         return new WinUIFile(file);
     }
 
+    /// <inheritdoc/>
     public async Task<IFolder> GetParentAsync(IFile file)
     {
         if (file is not WinUIFile winUIFile)
@@ -58,6 +68,7 @@ internal class WinUIFileHandler : IFileHandler
         return new WinUIFolder(folder);
     }
 
+    /// <inheritdoc/>
     public async Task MoveAndReplaceAsync(IFile sourceFile, IFile fileToReplace)
     {
         if (sourceFile is not WinUIFile winUISourceFile)
@@ -75,6 +86,7 @@ internal class WinUIFileHandler : IFileHandler
         await sourceStorageFile.MoveAndReplaceAsync(targetFile);
     }
 
+    /// <inheritdoc/>
     public async Task MoveAsync(IFile sourceFile, IFolder destinationFolder)
     {
         if (sourceFile is not WinUIFile winUISourceFile)
@@ -92,6 +104,7 @@ internal class WinUIFileHandler : IFileHandler
         await sourceStorageFile.MoveAsync(targetFolder);
     }
 
+    /// <inheritdoc/>
     public async Task MoveAsync(IFile sourceFile, IFolder destinationFolder, string desiredNewName)
     {
         if (sourceFile is not WinUIFile winUISourceFile)
@@ -109,6 +122,7 @@ internal class WinUIFileHandler : IFileHandler
         await sourceStorageFile.MoveAsync(targetFolder, desiredNewName);
     }
 
+    /// <inheritdoc/>
     public async Task MoveAsync(IFile sourceFile, IFolder destinationFolder, string desiredNewName, NameCollisionOption option)
     {
         if (sourceFile is not WinUIFile winUISourceFile)
@@ -127,6 +141,7 @@ internal class WinUIFileHandler : IFileHandler
         await sourceStorageFile.MoveAsync(targetFolder, desiredNewName, winUIOption);
     }
 
+    /// <inheritdoc/>
     public async Task OpenAsync(IFile file, FileAcessMode accessMode)
     {
         if (file is not WinUIFile winUIFile)
@@ -139,6 +154,7 @@ internal class WinUIFileHandler : IFileHandler
         await storageFile.OpenAsync(winUIAccessMode);
     }
 
+    /// <inheritdoc/>
     public async Task OpenAsync(IFile file, FileAcessMode accessMode, StorageOpenOptions options)
     {
         if (file is not WinUIFile winUIFile)
@@ -152,6 +168,7 @@ internal class WinUIFileHandler : IFileHandler
         await storageFile.OpenAsync(winUIAccessMode, winUIOptions);
     }
 
+    /// <inheritdoc/>
     public async Task RenameAsync(IFile file, string desiredName)
     {
         if (file is not WinUIFile winUIFile)
@@ -163,6 +180,7 @@ internal class WinUIFileHandler : IFileHandler
         await storageFile.RenameAsync(desiredName);
     }
 
+    /// <inheritdoc/>
     public async Task RenameAsync(IFile file, string desiredName, NameCollisionOption option)
     {
         if (file is not WinUIFile winUIFile)
@@ -175,6 +193,12 @@ internal class WinUIFileHandler : IFileHandler
         await storageFile.RenameAsync(desiredName, winUIOption);
     }
 
+    /// <summary>
+    /// Converts a <see cref="NameCollisionOption"/> to a <see cref="Windows.Storage.NameCollisionOption"/>.
+    /// </summary>
+    /// <param name="option">The collision option to convert.</param>
+    /// <returns>The corresponding Windows.Storage collision option.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if the option is not recognized.</exception>
     private static Windows.Storage.NameCollisionOption ConvertNameCollisionOption(NameCollisionOption option)
     {
         return option switch
@@ -186,6 +210,12 @@ internal class WinUIFileHandler : IFileHandler
         };
     }
 
+    /// <summary>
+    /// Converts a <see cref="FileAcessMode"/> to a <see cref="Windows.Storage.FileAccessMode"/>.
+    /// </summary>
+    /// <param name="accessMode">The access mode to convert.</param>
+    /// <returns>The corresponding Windows.Storage access mode.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if the access mode is not recognized.</exception>
     private static Windows.Storage.FileAccessMode ConvertFileAccessMode(FileAcessMode accessMode)
     {
         return accessMode switch
@@ -196,6 +226,12 @@ internal class WinUIFileHandler : IFileHandler
         };
     }
 
+    /// <summary>
+    /// Converts a <see cref="StorageOpenOptions"/> to a <see cref="Windows.Storage.StorageOpenOptions"/>.
+    /// </summary>
+    /// <param name="options">The storage open options to convert.</param>
+    /// <returns>The corresponding Windows.Storage open options.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if the options are not recognized.</exception>
     private static Windows.Storage.StorageOpenOptions ConvertStorageOpenOptions(StorageOpenOptions options)
     {
         return options switch

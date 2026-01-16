@@ -3,21 +3,35 @@ using Windows.Storage;
 
 namespace Cyclotron.FileSystemAdapter.WinUI.Pickers;
 
+/// <summary>
+/// WinUI implementation of the <see cref="IFileOpenPicker"/> interface.
+/// </summary>
+/// <remarks>
+/// This class provides a file open picker dialog for WinUI applications.
+/// </remarks>
 internal class WinUIFileOpenPicker : IFileOpenPicker
 {
+    /// <inheritdoc/>
     public string CommitButtonText { get; set; }
 
+    /// <inheritdoc/>
     public IList<string> FileTypeFilter { get; }
 
+    /// <inheritdoc/>
     public PickerLocationId SuggestedStartLocation { get; set; }
 
+    /// <inheritdoc/>
     public PickerViewMode ViewMode { get; set; }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WinUIFileOpenPicker"/> class.
+    /// </summary>
     public WinUIFileOpenPicker()
     {
         FileTypeFilter = new List<string>();
     }
 
+    /// <inheritdoc/>
     public async Task<IFile> PickSingleFileAsync()
     {
         var fileOpenPicker = new FileOpenPicker(default)
@@ -42,6 +56,7 @@ internal class WinUIFileOpenPicker : IFileOpenPicker
         return file.AsIFile();
     }
 
+    /// <inheritdoc/>
     public async Task<IList<IFile>> PickMultipleFilesAsync()
     {
         var fileOpenPicker = new FileOpenPicker(default)
