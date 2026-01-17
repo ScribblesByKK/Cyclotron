@@ -11,6 +11,23 @@
       ],
       "dest": "api",
       "properties": {
+        "TargetFramework": "net10.0"
+      },
+      "disableGitFeatures": false,
+      "disableDefaultFilter": false,
+      "filter": "filterConfig.yml"
+    },
+    {
+      "src": [
+        {
+          "src": "..",
+          "files": [
+            "Cyclotron.FileSystemAdapter/**/*.csproj"
+          ]
+        }
+      ],
+      "dest": "api",
+      "properties": {
         "TargetFramework": "net10.0-windows10.0.26100.0"
       },
       "disableGitFeatures": false,
