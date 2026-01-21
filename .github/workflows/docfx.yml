@@ -34,23 +34,18 @@ jobs:
         with:
           dotnet-version: "10.0.x"
 
-      # - name: Setup MSBuild
-      #   uses: microsoft/setup-msbuild@v2
-      #   with:
-      #     vs-version: "[17.9,)"
-
-      # - name: Restore NuGet Packages
-      #   shell: pwsh
-      #   run: |
-      #     nuget restore Cyclotron.slnx
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+        with:
+          vs-version: "[17.9,)"
 
       - name: Setup DocFX
         run: dotnet tool install -g docfx
 
-      # - name: Build Solution
-      #   shell: pwsh
-      #   run: |
-      #     msbuild Cyclotron.slnx /p:Configuration=Release /p:Platform=x64
+      - name: Build Solution
+        shell: pwsh
+        run: |
+          msbuild Cyclotron.slnx -t:Build -restore /p:TargetFramework=net10.0-windows10.0.26100.0 /p:Configuration=Release /p:Platform=x64
 
       - name: Build Documentation Metadata
         shell: pwsh

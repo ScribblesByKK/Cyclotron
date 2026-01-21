@@ -15,6 +15,7 @@
       },
       "disableGitFeatures": false,
       "disableDefaultFilter": false,
+      "noRestore": true,
       "filter": "filterConfig.yml"
     }
   ],
