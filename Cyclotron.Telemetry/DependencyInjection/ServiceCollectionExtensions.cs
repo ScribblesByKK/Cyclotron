@@ -1,9 +1,5 @@
-using Cyclotron.Telemetry.Configuration;
-using Cyclotron.Telemetry.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Serilog;
-using Serilog.Events;
 
 namespace Cyclotron.Telemetry.DependencyInjection;
 

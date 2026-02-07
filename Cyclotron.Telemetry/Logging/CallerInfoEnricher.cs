@@ -1,6 +1,3 @@
-using Serilog.Core;
-using Serilog.Events;
-
 namespace Cyclotron.Telemetry.Logging;
 
 /// <summary>
