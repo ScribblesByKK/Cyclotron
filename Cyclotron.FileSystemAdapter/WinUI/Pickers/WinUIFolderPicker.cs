@@ -40,7 +40,7 @@ internal class WinUIFolderPicker : IFolderPicker
             ViewMode = (Microsoft.Windows.Storage.Pickers.PickerViewMode)ViewMode
         };
         var folderResult = await folderPicker.PickSingleFolderAsync();
-        if (string.IsNullOrEmpty(folderResult.Path))
+        if (folderResult == null)
         {
             return default;
         }

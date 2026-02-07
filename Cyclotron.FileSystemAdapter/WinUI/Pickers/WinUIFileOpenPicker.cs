@@ -46,7 +46,7 @@ internal class WinUIFileOpenPicker : IFileOpenPicker
         }
 
         var fileResult = await fileOpenPicker.PickSingleFileAsync();
-        if (string.IsNullOrEmpty(fileResult.Path))
+        if (fileResult == null)
         {
             return default;
         }

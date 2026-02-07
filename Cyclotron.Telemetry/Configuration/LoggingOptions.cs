@@ -74,7 +74,7 @@ public class FileLoggingOptions
 
     /// <summary>
     /// Gets or sets the maximum file size in bytes before rolling.
-    /// Default is 100MB.
+    /// Default is 10MB.
     /// </summary>
     public long FileSizeLimitBytes { get; set; } = 10 * 1024 * 1024;
 

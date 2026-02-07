@@ -34,15 +34,13 @@ public sealed partial class FileSystemProvider
     /// </summary>
     /// <typeparam name="T">The type of the service to retrieve.</typeparam>
     /// <returns>An instance of the requested service type, or null if the service is not registered.</returns>
-    public T GetService<T>() where T : class
+    public T? GetService<T>() where T : class
     {
         if (_serviceProvider == null)
         {
             throw new InvalidOperationException("Service provider is not initialized. Please initialize it before requesting services.");
         }
-#pragma warning disable CS8603 // Possible null reference return.
         return _serviceProvider.GetService<T>();
-#pragma warning restore CS8603 // Possible null reference return.
     }
 
     #region FileSystemProvider Singleton class

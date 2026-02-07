@@ -49,7 +49,7 @@ internal class WinUIFileSavePicker : IFileSavePicker
         }
 
         var fileResult = await fileSavePicker.PickSaveFileAsync();
-        if (string.IsNullOrEmpty(fileResult.Path))
+        if (fileResult == null)
         {
             return default!;
         }
