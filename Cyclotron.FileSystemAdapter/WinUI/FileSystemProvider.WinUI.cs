@@ -1,4 +1,8 @@
+using Cyclotron.FileSystemAdapter.Abstractions.Pickers;
+using Cyclotron.FileSystemAdapter.WinUI.Handlers;
+using Cyclotron.FileSystemAdapter.WinUI.Pickers;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Cyclotron.FileSystemAdapter;
 
@@ -17,9 +21,14 @@ public sealed partial class FileSystemProvider
     /// </remarks>
     /// <param name="services">The service collection to initialize. If null, a new ServiceCollection is created.</param>
     /// <exception cref="InvalidOperationException">Thrown if any required service type is not found in the service collection.</exception>
-    public static void Initialize(IServiceCollection services)
+    public static void Initialize(IServiceCollection? services = default)
     {
         var serviceCollection = services ?? new ServiceCollection();
+        serviceCollection.TryAddSingleton<IFileHandler,WinUIFileHandler>();
+        serviceCollection.TryAddSingleton<IFolderHandler, WinUIFolderHandler>();
+        serviceCollection.TryAddTransient<IFileOpenPicker, WinUIFileOpenPicker>();
+        serviceCollection.TryAddTransient<IFileSavePicker, WinUIFileSavePicker>();
+        serviceCollection.TryAddTransient<IFolderPicker, WinUIFolderPicker>();
 
         serviceCollection.EnsureIfExists<IFileHandler>();
         serviceCollection.EnsureIfExists<IFolderHandler>();
@@ -27,6 +36,6 @@ public sealed partial class FileSystemProvider
         serviceCollection.EnsureIfExists<IFileSavePicker>();
         serviceCollection.EnsureIfExists<IFolderPicker>();
 
-        _ServiceProvider = serviceCollection.BuildServiceProvider();
+        _serviceProvider = serviceCollection.BuildServiceProvider();
     }
 }

@@ -108,7 +108,7 @@ internal class WinUIFolderHandler : IFolderHandler
 
         var storageFolder = await Windows.Storage.StorageFolder.GetFolderFromPathAsync(winUIFolder.Path);
         var files = await storageFolder.GetFilesAsync();
-        return files.Select(f => (IFile)new WinUIFile(f)).ToList();
+        return [.. files.Select(f => (IFile)new WinUIFile(f))];
     }
 
     /// <inheritdoc/>
@@ -141,11 +141,11 @@ internal class WinUIFolderHandler : IFolderHandler
 
         var storageFolder = await Windows.Storage.StorageFolder.GetFolderFromPathAsync(winUIFolder.Path);
         var folders = await storageFolder.GetFoldersAsync();
-        return folders.Select(f => (IFolder)new WinUIFolder(f)).ToList();
+        return [.. folders.Select(f => (IFolder)new WinUIFolder(f))];
     }
 
     /// <inheritdoc/>
-    public async Task<Abstractions.Models.IStorageItem> GetItemAsync(IFolder folder, string name)
+    public async Task<IStorageItem> GetItemAsync(IFolder folder, string name)
     {
         if (folder is not WinUIFolder winUIFolder)
         {
@@ -158,7 +158,7 @@ internal class WinUIFolderHandler : IFolderHandler
     }
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyList<Abstractions.Models.IStorageItem>> GetItemsAsync(IFolder folder)
+    public async Task<IReadOnlyList<IStorageItem>> GetItemsAsync(IFolder folder)
     {
         if (folder is not WinUIFolder winUIFolder)
         {
@@ -167,7 +167,7 @@ internal class WinUIFolderHandler : IFolderHandler
 
         var storageFolder = await Windows.Storage.StorageFolder.GetFolderFromPathAsync(winUIFolder.Path);
         var items = await storageFolder.GetItemsAsync();
-        return items.Select(ConvertStorageItem).ToList();
+        return [.. items.Select(ConvertStorageItem)];
     }
 
     /// <inheritdoc/>
@@ -209,7 +209,7 @@ internal class WinUIFolderHandler : IFolderHandler
     }
 
     /// <inheritdoc/>
-    public async Task<Abstractions.Models.IStorageItem> TryGetItemAsync(IFolder folder, string name)
+    public async Task<IStorageItem?> TryGetItemAsync(IFolder folder, string name)
     {
         if (folder is not WinUIFolder winUIFolder)
         {
@@ -218,7 +218,7 @@ internal class WinUIFolderHandler : IFolderHandler
 
         var storageFolder = await Windows.Storage.StorageFolder.GetFolderFromPathAsync(winUIFolder.Path);
         var item = await storageFolder.TryGetItemAsync(name);
-        return item != null ? ConvertStorageItem(item) : null;
+        return item != default ? ConvertStorageItem(item) : default;
     }
 
     /// <summary>
@@ -227,7 +227,7 @@ internal class WinUIFolderHandler : IFolderHandler
     /// <param name="item">The storage item to convert.</param>
     /// <returns>The converted storage item.</returns>
     /// <exception cref="NotSupportedException">Thrown if the storage item type is not supported.</exception>
-    private static Abstractions.Models.IStorageItem ConvertStorageItem(Windows.Storage.IStorageItem item)
+    private static IStorageItem ConvertStorageItem(Windows.Storage.IStorageItem item)
     {
         return item switch
         {

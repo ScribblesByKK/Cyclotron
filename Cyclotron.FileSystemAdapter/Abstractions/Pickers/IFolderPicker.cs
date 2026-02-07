@@ -37,6 +37,6 @@ public interface IFolderPicker
     /// Asynchronously displays a dialog to pick a single folder.
     /// </summary>
     /// <returns>A task that represents the asynchronous operation. The result contains the selected folder, or null if no folder was selected.</returns>
-    Task<IFolder> PickFolderAsync();
+    Task<IFolder?> PickFolderAsync();
 }
 

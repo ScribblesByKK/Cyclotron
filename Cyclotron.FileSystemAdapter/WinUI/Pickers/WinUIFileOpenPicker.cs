@@ -1,4 +1,4 @@
-using Cyclotron.FileSystemAdapter.WinUI;
+using Cyclotron.FileSystemAdapter.Abstractions.Pickers;
 
 namespace Cyclotron.FileSystemAdapter.WinUI.Pickers;
 
@@ -11,7 +11,7 @@ namespace Cyclotron.FileSystemAdapter.WinUI.Pickers;
 internal class WinUIFileOpenPicker : IFileOpenPicker
 {
     /// <inheritdoc/>
-    public string CommitButtonText { get; set; }
+    public required string CommitButtonText { get; set; }
 
     /// <inheritdoc/>
     public IList<string> FileTypeFilter { get; }
@@ -27,20 +27,20 @@ internal class WinUIFileOpenPicker : IFileOpenPicker
     /// </summary>
     public WinUIFileOpenPicker()
     {
-        FileTypeFilter = new List<string>();
+        FileTypeFilter = [];
     }
 
     /// <inheritdoc/>
-    public async Task<IFile> PickSingleFileAsync()
+    public async Task<IFile?> PickSingleFileAsync()
     {
-        var fileOpenPicker = new Microsoft.Windows.Storage.Pickers.FileOpenPicker(default)
+        var fileOpenPicker = new Microsoft.Windows.Storage.Pickers.FileOpenPicker(WindowUtil.GetActiveWindowId())
         {
-            CommitButtonText = this.CommitButtonText,
-            SuggestedStartLocation = (Microsoft.Windows.Storage.Pickers.PickerLocationId)this.SuggestedStartLocation,
-            ViewMode = (Microsoft.Windows.Storage.Pickers.PickerViewMode)this.ViewMode
+            CommitButtonText = CommitButtonText,
+            SuggestedStartLocation = (Microsoft.Windows.Storage.Pickers.PickerLocationId)SuggestedStartLocation,
+            ViewMode = (Microsoft.Windows.Storage.Pickers.PickerViewMode)ViewMode
         };
 
-        foreach (var fileType in this.FileTypeFilter)
+        foreach (var fileType in FileTypeFilter)
         {
             fileOpenPicker.FileTypeFilter.Add(fileType);
         }
@@ -58,22 +58,22 @@ internal class WinUIFileOpenPicker : IFileOpenPicker
     /// <inheritdoc/>
     public async Task<IList<IFile>> PickMultipleFilesAsync()
     {
-        var fileOpenPicker = new Microsoft.Windows.Storage.Pickers.FileOpenPicker(default)
+        var fileOpenPicker = new Microsoft.Windows.Storage.Pickers.FileOpenPicker(WindowUtil.GetActiveWindowId())
         {
-            CommitButtonText = this.CommitButtonText,
-            SuggestedStartLocation = (Microsoft.Windows.Storage.Pickers.PickerLocationId)this.SuggestedStartLocation,
-            ViewMode = (Microsoft.Windows.Storage.Pickers.PickerViewMode)this.ViewMode
+            CommitButtonText = CommitButtonText,
+            SuggestedStartLocation = (Microsoft.Windows.Storage.Pickers.PickerLocationId)SuggestedStartLocation,
+            ViewMode = (Microsoft.Windows.Storage.Pickers.PickerViewMode)ViewMode
         };
 
-        foreach (var fileType in this.FileTypeFilter)
+        foreach (var fileType in FileTypeFilter)
         {
             fileOpenPicker.FileTypeFilter.Add(fileType);
         }
 
         var filesResult = await fileOpenPicker.PickMultipleFilesAsync();
-        if (filesResult == null || filesResult.Count == 0)
+        if (filesResult == default || filesResult.Count == 0)
         {
-            return new List<IFile>();
+            return [];
         }
 
         var files = new List<IFile>();

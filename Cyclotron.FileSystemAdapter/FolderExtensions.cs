@@ -1,5 +1,3 @@
-using Microsoft.VisualBasic;
-
 namespace Cyclotron.FileSystemAdapter;
 
 /// <summary>
@@ -127,7 +125,7 @@ public static class FolderExtensions
     /// <param name="folder">The folder to search.</param>
     /// <param name="name">The name of the item to retrieve.</param>
     /// <returns>A task that represents the asynchronous operation. The result contains the storage item.</returns>
-    public static Task<Abstractions.Models.IStorageItem> GetItemAsync(this IFolder folder, string name)
+    public static Task<IStorageItem> GetItemAsync(this IFolder folder, string name)
     {
         return _folderHandler.GetItemAsync(folder, name);
     }
@@ -137,7 +135,7 @@ public static class FolderExtensions
     /// </summary>
     /// <param name="folder">The folder to search.</param>
     /// <returns>A task that represents the asynchronous operation. The result contains a read-only list of storage items.</returns>
-    public static Task<IReadOnlyList<Abstractions.Models.IStorageItem>> GetItemsAsync(this IFolder folder)
+    public static Task<IReadOnlyList<IStorageItem>> GetItemsAsync(this IFolder folder)
     {
         return _folderHandler.GetItemsAsync(folder);
     }
@@ -185,7 +183,7 @@ public static class FolderExtensions
     /// <param name="folder">The folder to search.</param>
     /// <param name="name">The name of the item to retrieve.</param>
     /// <returns>A task that represents the asynchronous operation. The result contains the storage item if found, or null if not found.</returns>
-    public static Task<Abstractions.Models.IStorageItem> TryGetItemAsync(this IFolder folder, string name)
+    public static Task<IStorageItem?> TryGetItemAsync(this IFolder folder, string name)
     {
         return _folderHandler.TryGetItemAsync(folder, name);
     }

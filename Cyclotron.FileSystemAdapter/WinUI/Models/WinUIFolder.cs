@@ -11,18 +11,18 @@ namespace Cyclotron.FileSystemAdapter.WinUI.Models;
 internal class WinUIFolder : IFolder
 {
     /// <inheritdoc/>
-    public string Name { get { return _Folder.Name; } }
+    public string Name => _folder.Name;
 
     /// <inheritdoc/>
-    public string Path { get { return _Folder.Path; } }
+    public string Path => _folder.Path;
 
     /// <inheritdoc/>
-    public string FolderRelativeId { get { return _Folder.FolderRelativeId; } }
+    public string FolderRelativeId => _folder.FolderRelativeId;
 
     /// <summary>
     /// The underlying <see cref="StorageFolder"/> object.
     /// </summary>
-    private readonly StorageFolder _Folder;
+    private readonly StorageFolder _folder;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WinUIFolder"/> class.
@@ -30,6 +30,6 @@ internal class WinUIFolder : IFolder
     /// <param name="folder">The <see cref="StorageFolder"/> to wrap.</param>
     public WinUIFolder(StorageFolder folder)
     {
-        _Folder = folder;
+        _folder = folder;
     }
 }

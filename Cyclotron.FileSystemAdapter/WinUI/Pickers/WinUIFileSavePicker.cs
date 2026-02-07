@@ -1,4 +1,4 @@
-using Cyclotron.FileSystemAdapter.WinUI;
+using Cyclotron.FileSystemAdapter.Abstractions.Pickers;
 
 namespace Cyclotron.FileSystemAdapter.WinUI.Pickers;
 
@@ -11,16 +11,16 @@ namespace Cyclotron.FileSystemAdapter.WinUI.Pickers;
 internal class WinUIFileSavePicker : IFileSavePicker
 {
     /// <inheritdoc/>
-    public string CommitButtonText { get; set; }
+    public required string CommitButtonText { get; set; }
 
     /// <inheritdoc/>
     public IDictionary<string, IList<string>> FileTypeChoices { get; }
 
     /// <inheritdoc/>
-    public string SuggestedFileName { get; set; }
+    public required string SuggestedFileName { get; set; }
 
     /// <inheritdoc/>
-    public IFile SuggestedSaveFile { get; set; }
+    public required IFile SuggestedSaveFile { get; set; }
 
     /// <inheritdoc/>
     public PickerLocationId SuggestedStartLocation { get; set; }
@@ -36,14 +36,14 @@ internal class WinUIFileSavePicker : IFileSavePicker
     /// <inheritdoc/>
     public async Task<IFile> PickSaveFileAsync()
     {
-        var fileSavePicker = new Microsoft.Windows.Storage.Pickers.FileSavePicker(default)
+        var fileSavePicker = new Microsoft.Windows.Storage.Pickers.FileSavePicker(WindowUtil.GetActiveWindowId())
         {
-            CommitButtonText = this.CommitButtonText,
-            SuggestedFileName = this.SuggestedFileName,
-            SuggestedStartLocation = (Microsoft.Windows.Storage.Pickers.PickerLocationId)this.SuggestedStartLocation
+            CommitButtonText = CommitButtonText,
+            SuggestedFileName = SuggestedFileName,
+            SuggestedStartLocation = (Microsoft.Windows.Storage.Pickers.PickerLocationId)SuggestedStartLocation
         };
 
-        foreach (var fileTypeChoice in this.FileTypeChoices)
+        foreach (var fileTypeChoice in FileTypeChoices)
         {
             fileSavePicker.FileTypeChoices.Add(fileTypeChoice.Key, fileTypeChoice.Value);
         }
@@ -51,7 +51,7 @@ internal class WinUIFileSavePicker : IFileSavePicker
         var fileResult = await fileSavePicker.PickSaveFileAsync();
         if (string.IsNullOrEmpty(fileResult.Path))
         {
-            return default;
+            return default!;
         }
 
         var file = await Windows.Storage.StorageFile.GetFileFromPathAsync(fileResult.Path);
