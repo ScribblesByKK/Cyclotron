@@ -1,5 +1,5 @@
 using System.Runtime.CompilerServices;
-using Microsoft.Extensions.Logging;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Cyclotron.Telemetry.Logging;
 

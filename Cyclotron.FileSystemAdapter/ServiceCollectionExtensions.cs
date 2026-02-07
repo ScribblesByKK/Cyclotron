@@ -12,10 +12,7 @@ public static class ServiceCollectionExtensions
     /// <param name="services">The service collection.</param>
     public static void EnsureIfExists<TService>(this IServiceCollection services)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         if (!services.Any(descriptor => descriptor.ServiceType == typeof(TService)))
         {

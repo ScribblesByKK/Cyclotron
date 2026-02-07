@@ -1,5 +1,5 @@
-global using System;
-global using System.Collections.Generic;
-global using System.IO;
-global using System.Threading;
-global using System.Threading.Tasks;
+global using Cyclotron.Telemetry.Configuration;
+global using Cyclotron.Telemetry.Logging;
+global using Serilog;
+global using Serilog.Core;
+global using Serilog.Events;

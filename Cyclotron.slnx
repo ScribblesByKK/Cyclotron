@@ -5,6 +5,7 @@
     <Platform Name="x86" />
   </Configurations>
   <Folder Name="/_Items/">
+    <File Path=".editorconfig" />
     <File Path="Directory.Build.Props" />
     <File Path="Directory.Packages.Props" />
   </Folder>

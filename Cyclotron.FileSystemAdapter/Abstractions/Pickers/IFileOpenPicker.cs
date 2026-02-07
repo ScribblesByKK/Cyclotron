@@ -36,7 +36,7 @@ public interface IFileOpenPicker
     /// Asynchronously displays a dialog to pick a single file.
     /// </summary>
     /// <returns>A task that represents the asynchronous operation. The result contains the selected file, or null if no file was selected.</returns>
-    Task<IFile> PickSingleFileAsync();
+    Task<IFile?> PickSingleFileAsync();
 
     /// <summary>
     /// Asynchronously displays a dialog to pick multiple files.

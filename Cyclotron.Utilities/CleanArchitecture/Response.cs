@@ -78,18 +78,18 @@ public class ErrorResponse(IUsecaseRequest request, ErrorType errorType, Excepti
     /// <summary>
     /// Gets or sets the request associated with this response.
     /// </summary>
-    IUsecaseRequest Request { get => _request; }
+    public IUsecaseRequest Request => _request;
     protected readonly IUsecaseRequest _request = request;
 
     /// <summary>
     /// Gets or sets the type of error.
     /// </summary>
-    ErrorType ErrorType { get => _errorType; }
+    public ErrorType ErrorType => _errorType;
     protected readonly ErrorType _errorType = errorType;
 
     /// <summary>
     /// Gets or sets the exception associated with the error.
     /// </summary>
-    Exception Exception { get => _exception; }
+    public Exception Exception => _exception;
     protected readonly Exception _exception = exception;
 }

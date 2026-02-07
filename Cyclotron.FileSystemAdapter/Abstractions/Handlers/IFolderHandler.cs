@@ -132,5 +132,5 @@ public interface IFolderHandler
     /// <param name="folder">The folder to search.</param>
     /// <param name="name">The name of the item to retrieve.</param>
     /// <returns>A task that represents the asynchronous operation. The result contains the storage item if found, or null if not found.</returns>
-    Task<IStorageItem> TryGetItemAsync(IFolder folder, string name);
+    Task<IStorageItem?> TryGetItemAsync(IFolder folder, string name);
 }

@@ -1,4 +1,4 @@
-using Cyclotron.FileSystemAdapter.WinUI;
+using Cyclotron.FileSystemAdapter.Abstractions.Pickers;
 
 namespace Cyclotron.FileSystemAdapter.WinUI.Pickers;
 
@@ -11,7 +11,7 @@ namespace Cyclotron.FileSystemAdapter.WinUI.Pickers;
 internal class WinUIFolderPicker : IFolderPicker
 {
     /// <inheritdoc/>
-    public string CommitButtonText { get; set; }
+    public required string CommitButtonText { get; set; }
 
     /// <inheritdoc/>
     public IList<string> FileTypeFilter { get; }
@@ -27,20 +27,20 @@ internal class WinUIFolderPicker : IFolderPicker
     /// </summary>
     public WinUIFolderPicker()
     {
-        FileTypeFilter = new List<string>();
+        FileTypeFilter = [];
     }
 
     /// <inheritdoc/>
-    public async Task<IFolder> PickFolderAsync()
+    public async Task<IFolder?> PickFolderAsync()
     {
-        var folderPicker = new Microsoft.Windows.Storage.Pickers.FolderPicker(default)
+        var folderPicker = new Microsoft.Windows.Storage.Pickers.FolderPicker(WindowUtil.GetActiveWindowId())
         {
-            CommitButtonText = this.CommitButtonText,
-            SuggestedStartLocation = (Microsoft.Windows.Storage.Pickers.PickerLocationId)this.SuggestedStartLocation,
-            ViewMode = (Microsoft.Windows.Storage.Pickers.PickerViewMode)this.ViewMode
+            CommitButtonText = CommitButtonText,
+            SuggestedStartLocation = (Microsoft.Windows.Storage.Pickers.PickerLocationId)SuggestedStartLocation,
+            ViewMode = (Microsoft.Windows.Storage.Pickers.PickerViewMode)ViewMode
         };
         var folderResult = await folderPicker.PickSingleFolderAsync();
-        if (string.IsNullOrEmpty(folderResult.Path))
+        if (folderResult == null)
         {
             return default;
         }
