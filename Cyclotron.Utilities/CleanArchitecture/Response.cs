@@ -1,6 +1,5 @@
 namespace Cyclotron.Utilities.CleanArchitecture;
 
-
 /// <summary>
 /// Specifies the type of response for a use case operation.
 /// </summary>

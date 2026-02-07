@@ -1,7 +1,11 @@
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Cyclotron.FileSystemAdapter;
+#pragma warning disable IDE0130, S1200
+namespace Cyclotron.Extensions.DepepndencyInjection;
 
+/// <summary>
+/// Extension methods for <see cref="IServiceCollection"/> used in dependency injection setup.
+/// </summary>
 public static class ServiceCollectionExtensions
 {
     /// <summary>
@@ -10,6 +14,7 @@ public static class ServiceCollectionExtensions
     /// </summary>
     /// <typeparam name="TService">The type of the service to check for.</typeparam>
     /// <param name="services">The service collection.</param>
+    /// <exception cref="InvalidOperationException">Thrown if the required service type is not found in the collection.</exception>
     public static void EnsureIfExists<TService>(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
