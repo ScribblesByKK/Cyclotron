@@ -1,5 +1,3 @@
-using Cyclotron.FileSystemAdapter.Abstractions.Pickers;
-
 namespace Cyclotron.FileSystemAdapter.WinUI.Pickers;
 
 /// <summary>

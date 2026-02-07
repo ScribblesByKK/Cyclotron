@@ -1,4 +1,3 @@
-using Cyclotron.FileSystemAdapter.Abstractions.Pickers;
 using Cyclotron.FileSystemAdapter.WinUI.Handlers;
 using Cyclotron.FileSystemAdapter.WinUI.Pickers;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,7 +23,7 @@ public sealed partial class FileSystemProvider
     public static void Initialize(IServiceCollection? services = default)
     {
         var serviceCollection = services ?? new ServiceCollection();
-        serviceCollection.TryAddSingleton<IFileHandler,WinUIFileHandler>();
+        serviceCollection.TryAddSingleton<IFileHandler, WinUIFileHandler>();
         serviceCollection.TryAddSingleton<IFolderHandler, WinUIFolderHandler>();
         serviceCollection.TryAddTransient<IFileOpenPicker, WinUIFileOpenPicker>();
         serviceCollection.TryAddTransient<IFileSavePicker, WinUIFileSavePicker>();

@@ -1,7 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Cyclotron.Telemetry.DependencyInjection;
+#pragma warning disable IDE0130, S1200
+namespace Cyclotron.Extensions.DependencyInjection;
 
 /// <summary>
 /// Extension methods for adding Cyclotron Telemetry services to the DI container.
