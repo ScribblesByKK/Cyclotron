@@ -11,8 +11,9 @@ namespace Cyclotron.FileSystemAdapter;
 /// </remarks>
 public sealed partial class FileSystemProvider
 {
+    private readonly IServiceProvider _serviceProvider;
 #pragma warning disable IDE0044 // Add readonly modifier
-    private static IServiceProvider _serviceProvider = default!;
+    private static IServiceProvider? _initServiceProvider = default!;
 #pragma warning restore IDE0044 // Add readonly modifier
 
     /// <summary>
@@ -27,13 +28,17 @@ public sealed partial class FileSystemProvider
     /// <remarks>
     /// The constructor is private to enforce the singleton pattern.
     /// </remarks>
-    private FileSystemProvider() { }
+    private FileSystemProvider(IServiceProvider serviceProvider)
+    {
+        _serviceProvider = serviceProvider;
+    }
 
     /// <summary>
     /// Retrieves a service of the specified type from the service provider.
     /// </summary>
     /// <typeparam name="T">The type of the service to retrieve.</typeparam>
     /// <returns>An instance of the requested service type, or null if the service is not registered.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the service provider is not initialized.</exception>
     public T? GetService<T>() where T : class
     {
         if (_serviceProvider == null)
@@ -41,6 +46,21 @@ public sealed partial class FileSystemProvider
             throw new InvalidOperationException("Service provider is not initialized. Please initialize it before requesting services.");
         }
         return _serviceProvider.GetService<T>();
+    }
+
+    /// <summary>
+    /// Retrieves a required service of the specified type from the service provider.
+    /// </summary>
+    /// <typeparam name="T">The type of the service to retrieve.</typeparam>
+    /// <returns>An instance of the requested service type.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the service provider is not initialized.</exception>
+    public T GetRequiredService<T>() where T : class
+    {
+        if (_serviceProvider == null)
+        {
+            throw new InvalidOperationException("Service provider is not initialized. Please initialize it before requesting services.");
+        }
+        return _serviceProvider.GetRequiredService<T>();
     }
 
     #region FileSystemProvider Singleton class
@@ -53,7 +73,9 @@ public sealed partial class FileSystemProvider
         /// The singleton instance of FileSystemProvider.
         /// </summary>
         //Marked as internal as it will be accessed from the enclosing class. It doesn't raise any problem, as the class itself is private.
-        internal static readonly FileSystemProvider Instance = new();
+#pragma warning disable CS8604 // Possible null reference argument.
+        internal static readonly FileSystemProvider Instance = new(_initServiceProvider);
+#pragma warning restore CS8604 // Possible null reference argument.
 
         /// <summary>
         /// Initializes the FileSystemProviderSingleton class.

@@ -36,6 +36,6 @@ public sealed partial class FileSystemProvider
         serviceCollection.EnsureIfExists<IFileSavePicker>();
         serviceCollection.EnsureIfExists<IFolderPicker>();
 
-        _serviceProvider = serviceCollection.BuildServiceProvider();
+        _initServiceProvider = serviceCollection.BuildServiceProvider();
     }
 }
