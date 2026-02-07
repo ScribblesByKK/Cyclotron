@@ -8,7 +8,7 @@ public static class FolderExtensions
     /// <summary>
     /// A static instance of the <see cref="IFolderHandler"/> used for all folder operations.
     /// </summary>
-    private static readonly IFolderHandler _folderHandler = FileSystemProvider.Instance.GetService<IFolderHandler>();
+    private static readonly IFolderHandler _folderHandler = FileSystemProvider.Instance.GetRequiredService<IFolderHandler>();
 
     /// <summary>
     /// Asynchronously creates a file in the folder.

@@ -8,7 +8,7 @@ public static class FileExtensions
     /// <summary>
     /// A static instance of the <see cref="IFileHandler"/> used for all file operations.
     /// </summary>
-    private static readonly IFileHandler _fileHandler = FileSystemProvider.Instance.GetService<IFileHandler>();
+    private static readonly IFileHandler _fileHandler = FileSystemProvider.Instance.GetRequiredService<IFileHandler>();
 
     /// <summary>
     /// Asynchronously copies a source file and replaces the destination file.
