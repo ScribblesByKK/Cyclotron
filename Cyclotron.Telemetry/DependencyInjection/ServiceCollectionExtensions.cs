@@ -1,7 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-#pragma warning disable IDE0130, S1200
 namespace Cyclotron.Extensions.DependencyInjection;
 
 /// <summary>

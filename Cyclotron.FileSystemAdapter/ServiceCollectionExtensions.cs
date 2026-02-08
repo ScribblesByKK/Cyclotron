@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 
-#pragma warning disable IDE0130, S1200
 namespace Cyclotron.Extensions.DepepndencyInjection;
 
 /// <summary>
