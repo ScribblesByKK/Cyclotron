@@ -12,4 +12,5 @@
   <Project Path="Cyclotron.FileSystemAdapter/Cyclotron.FileSystemAdapter.csproj" />
   <Project Path="Cyclotron.Telemetry/Cyclotron.Telemetry.csproj" />
   <Project Path="Cyclotron.Utilities/Cyclotron.Utilities.csproj" />
+  <Project Path="Cyclotron.Tests/Cyclotron.Tests.csproj" />
 </Solution>
