@@ -13,7 +13,7 @@ on:
 
 jobs:
   test:
-    runs-on: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && 'windows-latest' || 'self-hosted' }}
+    runs-on: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') && 'windows-latest' || fromJSON('["self-hosted", "Windows"]') }}
     permissions:
       contents: read
     
@@ -37,6 +37,7 @@ jobs:
       run: dotnet build Cyclotron.Tests/Cyclotron.Tests.csproj --configuration Release --no-restore
       
     - name: Run tests with coverage
+      shell: pwsh
       run: |
         dotnet test Cyclotron.Tests/Cyclotron.Tests.csproj `
           --configuration Release `
@@ -55,7 +56,7 @@ jobs:
         retention-days: 1
 
   coverage:
-    runs-on: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && 'ubuntu-latest' || 'self-hosted' }}
+    runs-on: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') && 'ubuntu-latest' || fromJSON('["self-hosted", "Linux"]') }}
     needs: test
     if: always()
     permissions:
