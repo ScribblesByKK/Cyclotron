@@ -106,7 +106,7 @@ public class TelemetryAdapterTests
         logger.LogDebug("Test debug message");
 
         _serilogLogger.Received(1).ForContext(Arg.Any<Serilog.Core.ILogEventEnricher>());
-        _serilogLogger.Received(1).Write(LogEventLevel.Debug, null, "Test debug message");
+        _serilogLogger.Received(1).Write(LogEventLevel.Debug, (Exception?)null, "Test debug message");
     }
 
     [Test]
@@ -119,7 +119,7 @@ public class TelemetryAdapterTests
         logger.LogDebug("Test message");
 
         _serilogLogger.DidNotReceive().ForContext(Arg.Any<Serilog.Core.ILogEventEnricher>());
-        _serilogLogger.Received(1).Write(LogEventLevel.Debug, null, "Test message");
+        _serilogLogger.Received(1).Write(LogEventLevel.Debug, (Exception?)null, "Test message");
     }
 
     #endregion
@@ -133,7 +133,7 @@ public class TelemetryAdapterTests
 
         logger.LogInformation("Test info message");
 
-        _serilogLogger.Received(1).Write(LogEventLevel.Information, null, "Test info message");
+        _serilogLogger.Received(1).Write(LogEventLevel.Information, (Exception?)null, "Test info message");
     }
 
     [Test]
@@ -157,7 +157,7 @@ public class TelemetryAdapterTests
 
         logger.LogWarning("Test warning");
 
-        _serilogLogger.Received(1).Write(LogEventLevel.Warning, null, "Test warning");
+        _serilogLogger.Received(1).Write(LogEventLevel.Warning, (Exception?)null, "Test warning");
     }
 
     [Test]
@@ -182,7 +182,7 @@ public class TelemetryAdapterTests
 
         logger.LogError("Test error");
 
-        _serilogLogger.Received(1).Write(LogEventLevel.Error, null, "Test error");
+        _serilogLogger.Received(1).Write(LogEventLevel.Error, (Exception?)null, "Test error");
     }
 
     [Test]
@@ -207,7 +207,7 @@ public class TelemetryAdapterTests
 
         logger.LogCritical("Critical failure");
 
-        _serilogLogger.Received(1).Write(LogEventLevel.Fatal, null, "Critical failure");
+        _serilogLogger.Received(1).Write(LogEventLevel.Fatal, (Exception?)null, "Critical failure");
     }
 
     [Test]

@@ -118,34 +118,34 @@ public class FileSystemAdapterTests
     [Test]
     public async Task OpenAsync_WithReadMode_CallsHandlerCorrectly()
     {
-        await _fileHandler.OpenAsync(_mockFile, FileAcessMode.Read);
+        await _fileHandler.OpenAsync(_mockFile, FileAccessMode.Read);
 
-        await _fileHandler.Received(1).OpenAsync(_mockFile, FileAcessMode.Read);
+        await _fileHandler.Received(1).OpenAsync(_mockFile, FileAccessMode.Read);
     }
 
     [Test]
     public async Task OpenAsync_WithReadWriteMode_CallsHandlerCorrectly()
     {
-        await _fileHandler.OpenAsync(_mockFile, FileAcessMode.ReadWrite);
+        await _fileHandler.OpenAsync(_mockFile, FileAccessMode.ReadWrite);
 
-        await _fileHandler.Received(1).OpenAsync(_mockFile, FileAcessMode.ReadWrite);
+        await _fileHandler.Received(1).OpenAsync(_mockFile, FileAccessMode.ReadWrite);
     }
 
     [Test]
     public async Task OpenAsync_WithStorageOptions_CallsHandlerCorrectly()
     {
-        await _fileHandler.OpenAsync(_mockFile, FileAcessMode.Read, StorageOpenOptions.AllowOnlyReaders);
+        await _fileHandler.OpenAsync(_mockFile, FileAccessMode.Read, StorageOpenOptions.AllowOnlyReaders);
 
-        await _fileHandler.Received(1).OpenAsync(_mockFile, FileAcessMode.Read, StorageOpenOptions.AllowOnlyReaders);
+        await _fileHandler.Received(1).OpenAsync(_mockFile, FileAccessMode.Read, StorageOpenOptions.AllowOnlyReaders);
     }
 
     [Test]
     public async Task OpenAsync_WithAllowReadersAndWriters_CallsHandlerCorrectly()
     {
-        await _fileHandler.OpenAsync(_mockFile, FileAcessMode.ReadWrite, StorageOpenOptions.AllowReadersAndWriters);
+        await _fileHandler.OpenAsync(_mockFile, FileAccessMode.ReadWrite, StorageOpenOptions.AllowReadersAndWriters);
 
         await _fileHandler.Received(1).OpenAsync(
-            _mockFile, FileAcessMode.ReadWrite, StorageOpenOptions.AllowReadersAndWriters);
+            _mockFile, FileAccessMode.ReadWrite, StorageOpenOptions.AllowReadersAndWriters);
     }
 
     #endregion
@@ -564,11 +564,11 @@ public class FileSystemAdapterTests
     }
 
     [Test]
-    public void FileAcessMode_HasExpectedValues()
+    public void FileAccessMode_HasExpectedValues()
     {
-        Enum.GetValues<FileAcessMode>().Should().HaveCount(2);
-        FileAcessMode.Read.Should().Be((FileAcessMode)0);
-        FileAcessMode.ReadWrite.Should().Be((FileAcessMode)1);
+        Enum.GetValues<FileAccessMode>().Should().HaveCount(2);
+        FileAccessMode.Read.Should().Be((FileAccessMode)0);
+        FileAccessMode.ReadWrite.Should().Be((FileAccessMode)1);
     }
 
     [Test]
