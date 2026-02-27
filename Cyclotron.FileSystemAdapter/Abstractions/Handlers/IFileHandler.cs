@@ -71,7 +71,7 @@ public interface IFileHandler
     /// </summary>
     /// <param name="file">The file to open.</param>
     /// <param name="accessMode">The access mode (read or read-write).</param>
-    Task OpenAsync(IFile file, FileAcessMode accessMode);
+    Task OpenAsync(IFile file, FileAccessMode accessMode);
 
     /// <summary>
     /// Asynchronously opens a file with the specified access mode and storage options.
@@ -79,7 +79,7 @@ public interface IFileHandler
     /// <param name="file">The file to open.</param>
     /// <param name="accessMode">The access mode (read or read-write).</param>
     /// <param name="options">Additional storage options for opening the file.</param>
-    Task OpenAsync(IFile file, FileAcessMode accessMode, StorageOpenOptions options);
+    Task OpenAsync(IFile file, FileAccessMode accessMode, StorageOpenOptions options);
 
     /// <summary>
     /// Asynchronously renames a file with a new name.

@@ -6,10 +6,11 @@
   </Configurations>
   <Folder Name="/_Items/">
     <File Path=".editorconfig" />
-    <File Path="Directory.Build.Props" />
-    <File Path="Directory.Packages.Props" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
   </Folder>
   <Project Path="Cyclotron.FileSystemAdapter/Cyclotron.FileSystemAdapter.csproj" />
   <Project Path="Cyclotron.Telemetry/Cyclotron.Telemetry.csproj" />
   <Project Path="Cyclotron.Utilities/Cyclotron.Utilities.csproj" />
+  <Project Path="Cyclotron.Tests/Cyclotron.Tests.csproj" />
 </Solution>
