@@ -37,7 +37,7 @@ dotnet test --filter "Category=Unit"
 dotnet test --filter "Category=Integration"
 
 # Run with coverage
-dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura
+dotnet test -- --coverage --coverage-output-format cobertura
 ```
 
 ## Documentation
