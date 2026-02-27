@@ -1,6 +1,6 @@
 using Cyclotron.Telemetry.Configuration;
 using Cyclotron.Telemetry.Logging;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;

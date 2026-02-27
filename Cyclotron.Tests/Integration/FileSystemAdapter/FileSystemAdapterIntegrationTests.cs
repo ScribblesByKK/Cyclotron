@@ -1,6 +1,6 @@
 using Cyclotron.Tests.Integration.Fixtures;
 using Cyclotron.Tests.TestHelpers;
-using FluentAssertions;
+using AwesomeAssertions;
 
 namespace Cyclotron.Tests.Integration.FileSystemAdapter;
 

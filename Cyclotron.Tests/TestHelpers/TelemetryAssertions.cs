@@ -1,11 +1,11 @@
 using Cyclotron.Tests.Integration.Fixtures;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.Extensions.Logging;
 
 namespace Cyclotron.Tests.TestHelpers;
 
 /// <summary>
-/// FluentAssertions extensions for telemetry validation.
+/// AwesomeAssertions extensions for telemetry validation.
 /// </summary>
 public static class TelemetryAssertions
 {

@@ -1,6 +1,6 @@
 using Cyclotron.FileSystemAdapter.Abstractions.Handlers;
 using Cyclotron.FileSystemAdapter.Abstractions.Models;
-using FluentAssertions;
+using AwesomeAssertions;
 using NSubstitute;
 
 namespace Cyclotron.Tests.Unit.FileSystemAdapter;

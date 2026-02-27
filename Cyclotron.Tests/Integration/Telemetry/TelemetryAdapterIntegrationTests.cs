@@ -2,7 +2,7 @@ using Cyclotron.Telemetry.Configuration;
 using Cyclotron.Telemetry.Logging;
 using Cyclotron.Tests.Integration.Fixtures;
 using Cyclotron.Tests.TestHelpers;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Cyclotron.Extensions.DependencyInjection;
