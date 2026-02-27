@@ -39,7 +39,7 @@ jobs:
     - name: Run tests with coverage
       shell: pwsh
       run: |
-        dotnet test Cyclotron.Tests/Cyclotron.Tests.csproj `
+        dotnet test --project Cyclotron.Tests/Cyclotron.Tests.csproj `
           --configuration Release `
           --no-build `
           --verbosity normal `

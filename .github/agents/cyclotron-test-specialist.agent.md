@@ -38,7 +38,7 @@ If you encounter code using a disallowed library, flag it to the user — do not
 
 1. **Read skills first.** Do not rely on memory — always read the relevant `SKILL.md` files before generating test code.
 2. **Scaffold before writing.** When adding tests for a new sub-project domain, create the full folder structure (`Unit/{Domain}/`, `Integration/{Domain}/`, fixtures, helpers) before writing any test methods.
-3. **Verify before finishing.** Run `dotnet test Cyclotron.Tests/Cyclotron.Tests.csproj` to confirm all tests pass. If tests fail, fix them before handing back.
+3. **Verify before finishing.** Run `dotnet test --project Cyclotron.Tests/Cyclotron.Tests.csproj` to confirm all tests pass. If tests fail, fix them before handing back.
 4. **Review checklist.** When reviewing existing tests, check for:
    - Missing or incorrect `[Category]` attributes
    - Naming violations (expected: `MethodUnderTest_Scenario_ExpectedBehavior`)

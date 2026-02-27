@@ -218,7 +218,7 @@ Tests run in CI via `.github/workflows/test.yml`:
 - **Coverage tool**: Coverlet (both `Coverlet.Collector` and `Coverlet.MSBuild`).
 - **Coverage command**:
   ```bash
-  dotnet test Cyclotron.Tests/Cyclotron.Tests.csproj \
+  dotnet test --project Cyclotron.Tests/Cyclotron.Tests.csproj \
     --configuration Release \
     /p:CollectCoverage=true \
     /p:CoverletOutputFormat=cobertura \
