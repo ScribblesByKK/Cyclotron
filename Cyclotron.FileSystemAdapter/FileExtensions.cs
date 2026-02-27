@@ -97,7 +97,7 @@ public static class FileExtensions
     /// <param name="file">The file to open.</param>
     /// <param name="accessMode">The access mode (read or read-write).</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    public static Task OpenAsync(this IFile file, FileAcessMode accessMode)
+    public static Task OpenAsync(this IFile file, FileAccessMode accessMode)
     {
         return _fileHandler.OpenAsync(file, accessMode);
     }
@@ -109,7 +109,7 @@ public static class FileExtensions
     /// <param name="accessMode">The access mode (read or read-write).</param>
     /// <param name="options">Additional storage options for opening the file.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    public static Task OpenAsync(this IFile file, FileAcessMode accessMode, StorageOpenOptions options)
+    public static Task OpenAsync(this IFile file, FileAccessMode accessMode, StorageOpenOptions options)
     {
         return _fileHandler.OpenAsync(file, accessMode, options);
     }

@@ -40,7 +40,7 @@ public enum StorageDeletionOption
 /// <summary>
 /// Specifies the access mode for opening a file.
 /// </summary>
-public enum FileAcessMode
+public enum FileAccessMode
 {
     /// <summary>
     /// Open the file for reading only.

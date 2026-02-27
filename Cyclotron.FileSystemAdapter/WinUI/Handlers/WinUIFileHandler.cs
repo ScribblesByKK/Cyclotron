@@ -141,7 +141,7 @@ internal class WinUIFileHandler : IFileHandler
     }
 
     /// <inheritdoc/>
-    public async Task OpenAsync(IFile file, FileAcessMode accessMode)
+    public async Task OpenAsync(IFile file, FileAccessMode accessMode)
     {
         if (file is not WinUIFile winUIFile)
         {
@@ -154,7 +154,7 @@ internal class WinUIFileHandler : IFileHandler
     }
 
     /// <inheritdoc/>
-    public async Task OpenAsync(IFile file, FileAcessMode accessMode, StorageOpenOptions options)
+    public async Task OpenAsync(IFile file, FileAccessMode accessMode, StorageOpenOptions options)
     {
         if (file is not WinUIFile winUIFile)
         {
@@ -210,17 +210,17 @@ internal class WinUIFileHandler : IFileHandler
     }
 
     /// <summary>
-    /// Converts a <see cref="FileAcessMode"/> to a <see cref="Windows.Storage.FileAccessMode"/>.
+    /// Converts a <see cref="FileAccessMode"/> to a <see cref="Windows.Storage.FileAccessMode"/>.
     /// </summary>
     /// <param name="accessMode">The access mode to convert.</param>
     /// <returns>The corresponding Windows.Storage access mode.</returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown if the access mode is not recognized.</exception>
-    private static Windows.Storage.FileAccessMode ConvertFileAccessMode(FileAcessMode accessMode)
+    private static Windows.Storage.FileAccessMode ConvertFileAccessMode(FileAccessMode accessMode)
     {
         return accessMode switch
         {
-            FileAcessMode.Read => Windows.Storage.FileAccessMode.Read,
-            FileAcessMode.ReadWrite => Windows.Storage.FileAccessMode.ReadWrite,
+            FileAccessMode.Read => Windows.Storage.FileAccessMode.Read,
+            FileAccessMode.ReadWrite => Windows.Storage.FileAccessMode.ReadWrite,
             _ => throw new ArgumentOutOfRangeException(nameof(accessMode))
         };
     }

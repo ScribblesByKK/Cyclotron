@@ -1,0 +1,146 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+      - ci
+  pull_request:
+    branches:
+      - main
+      - ci
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') && 'windows-latest' || fromJSON('["self-hosted", "Windows"]') }}
+    permissions:
+      contents: read
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v6
+      with:
+        token: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
+        submodules: recursive
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: '10.x'
+        
+    - name: Restore dependencies
+      run: dotnet restore Cyclotron.Tests/Cyclotron.Tests.csproj
+      
+    - name: Build tests
+      run: dotnet build Cyclotron.Tests/Cyclotron.Tests.csproj --configuration Release --no-restore
+      
+    - name: Run tests with coverage
+      shell: pwsh
+      run: |
+        dotnet test --project Cyclotron.Tests/Cyclotron.Tests.csproj `
+          --configuration Release `
+          --no-build `
+          --verbosity normal `
+          -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
+      
+    - name: Upload coverage artifact
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: coverage-report
+        path: Cyclotron.Tests/bin/Release/net10.0/TestResults/coverage.cobertura.xml
+        retention-days: 1
+
+  coverage:
+    runs-on: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') && 'ubuntu-latest' || fromJSON('["self-hosted", "Linux"]') }}
+    needs: test
+    if: always()
+    permissions:
+      contents: read
+      pull-requests: write
+    
+    steps:
+    - name: Download coverage artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: coverage-report
+        path: coverage
+      
+    - name: Check coverage file
+      id: check_coverage
+      run: |
+        # Check if coverage file exists and has package data
+        if [ -f coverage/coverage.cobertura.xml ]; then
+          # Check if the file contains any package elements (meaningful coverage data)
+          if grep -q '<packages>' coverage/coverage.cobertura.xml && grep -q '<package ' coverage/coverage.cobertura.xml; then
+            echo "has_coverage=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_coverage=false" >> $GITHUB_OUTPUT
+            echo "Coverage file exists but contains no package data (0% coverage)"
+          fi
+        else
+          echo "has_coverage=false" >> $GITHUB_OUTPUT
+          echo "Coverage file not found"
+        fi
+      shell: bash
+      
+    - name: Code Coverage Report
+      if: steps.check_coverage.outputs.has_coverage == 'true'
+      uses: irongut/CodeCoverageSummary@v1.3.0
+      id: coverage
+      with:
+        filename: coverage/coverage.cobertura.xml
+        badge: true
+        fail_below_min: false
+        format: markdown
+        hide_branch_rate: false
+        hide_complexity: false
+        indicators: true
+        output: both
+        thresholds: '60 80'
+    
+    - name: Extract coverage percentage
+      if: steps.check_coverage.outputs.has_coverage == 'true'
+      id: extract_coverage
+      run: |
+        # Extract coverage percentage from the badge URL in CodeCoverageSummary output
+        # Badge format: ![Code Coverage](...badge/Code%20Coverage-43%25-critical...)
+        if [ -f code-coverage-results.md ]; then
+          coverage=$(grep -oP 'Coverage-\K[0-9]+(?=%25)' code-coverage-results.md | head -1 || true)
+          if [ -z "$coverage" ]; then
+            coverage="0"
+          fi
+          echo "coverage=$coverage" >> $GITHUB_OUTPUT
+        else
+          echo "coverage=0" >> $GITHUB_OUTPUT
+        fi
+      shell: bash
+    
+    - name: Set default coverage
+      if: steps.check_coverage.outputs.has_coverage == 'false'
+      id: default_coverage
+      run: echo "coverage=0" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Add Coverage PR Comment
+      uses: marocchino/sticky-pull-request-comment@v2
+      if: github.event_name == 'pull_request' && steps.check_coverage.outputs.has_coverage == 'true'
+      continue-on-error: true
+      with:
+        recreate: true
+        path: code-coverage-results.md
+    
+    - name: Create Coverage Badge
+      if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ci')
+      continue-on-error: true
+      uses: schneegans/dynamic-badges-action@v1.7.0
+      with:
+        auth: ${{ secrets.GIST_SECRET }}
+        gistID: 3884cb12468c35c41f70e4222b65c727
+        filename: cyclotron-coverage.json
+        label: code coverage
+        message: ${{ steps.check_coverage.outputs.has_coverage == 'true' && steps.extract_coverage.outputs.coverage || steps.default_coverage.outputs.coverage }}%
+        color: green
+        namedLogo: .NET
