@@ -105,10 +105,10 @@ jobs:
       if: steps.check_coverage.outputs.has_coverage == 'true'
       id: extract_coverage
       run: |
-        # Extract coverage percentage from the markdown output
+        # Extract coverage percentage from CodeCoverageSummary markdown output
+        # Format: | Line Rate | XX.XX% |
         if [ -f code-coverage-results.md ]; then
-          # Try to extract line coverage percentage
-          coverage=$(grep -oP 'Line Rate[^0-9]*\K[0-9]+(?:\.[0-9]+)?' code-coverage-results.md | head -1)
+          coverage=$(grep 'Line Rate' code-coverage-results.md | grep -oP '[0-9]+(?:\.[0-9]+)?(?=%)' | head -1)
           if [ -z "$coverage" ]; then
             coverage="0"
           fi
