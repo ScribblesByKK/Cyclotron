@@ -45,7 +45,7 @@ jobs:
           --verbosity normal `
           /p:CollectCoverage=true `
           /p:CoverletOutputFormat=cobertura `
-          /p:CoverletOutput=./coverage/coverage.cobertura.xml
+          /p:CoverletOutput=./Cyclotron.Tests/coverage/coverage.cobertura.xml
       
     - name: Upload coverage artifact
       uses: actions/upload-artifact@v4
