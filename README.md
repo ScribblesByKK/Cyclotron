@@ -54,6 +54,18 @@ docfx docfx.json --serve
 
 See [docs/README.md](docs/README.md) for more information about the documentation system.
 
+## Copilot Instructions
+
+Workspace-level Copilot instructions live in `.github/` and are automatically picked up by GitHub Copilot in VS Code:
+
+| File | Scope |
+|---|---|
+| [`.github/copilot-instructions.md`](.github/copilot-instructions.md) | All files — C# style, build defaults, change-scope rules, DI conventions |
+| [`.github/instructions/tests.instructions.md`](.github/instructions/tests.instructions.md) | `Cyclotron.Tests/**` — TUnit/AwesomeAssertions/NSubstitute patterns, category attributes |
+| [`.github/instructions/docs.instructions.md`](.github/instructions/docs.instructions.md) | `docs/**` — DocFX Markdown style, toc.yml rules, XML doc comment quality |
+
+Detailed test specialist guidance lives in [`.github/skills/cyclotron-test-specialist/`](.github/skills/cyclotron-test-specialist/).
+
 ## Contributing
 
 Contributions are welcome! Please ensure:
