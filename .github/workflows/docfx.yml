@@ -46,13 +46,18 @@ jobs:
         shell: pwsh
         run: |
           # Build only library projects (exclude test project - it targets net10.0 only and is not needed for docs)
-          msbuild Cyclotron.FileSystemAdapter/Cyclotron.FileSystemAdapter.csproj `
-                  Cyclotron.Telemetry/Cyclotron.Telemetry.csproj `
-                  Cyclotron.Utilities/Cyclotron.Utilities.csproj `
-                  -t:Build -restore `
-                  /p:TargetFramework=net10.0-windows10.0.26100.0 `
-                  /p:Configuration=Release `
-                  /p:Platform=x64
+          # MSBuild only accepts one project per invocation, so build each project separately
+          $projects = @(
+            "Cyclotron.FileSystemAdapter/Cyclotron.FileSystemAdapter.csproj",
+            "Cyclotron.Telemetry/Cyclotron.Telemetry.csproj",
+            "Cyclotron.Utilities/Cyclotron.Utilities.csproj"
+          )
+          foreach ($proj in $projects) {
+            msbuild $proj -t:Build -restore `
+              /p:TargetFramework=net10.0-windows10.0.26100.0 `
+              /p:Configuration=Release `
+              /p:Platform=x64
+          }
 
       - name: Build Documentation Metadata
         shell: pwsh
