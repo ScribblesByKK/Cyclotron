@@ -132,6 +132,22 @@ jobs:
         recreate: true
         path: code-coverage-results.md
     
+    - name: Determine badge color
+      if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ci')
+      id: badge_color
+      run: |
+        coverage=${{ steps.check_coverage.outputs.has_coverage == 'true' && steps.extract_coverage.outputs.coverage || steps.default_coverage.outputs.coverage }}
+        if [ "$coverage" -ge 80 ]; then
+          echo "color=brightgreen" >> $GITHUB_OUTPUT
+        elif [ "$coverage" -ge 60 ]; then
+          echo "color=yellow" >> $GITHUB_OUTPUT
+        elif [ "$coverage" -ge 40 ]; then
+          echo "color=orange" >> $GITHUB_OUTPUT
+        else
+          echo "color=red" >> $GITHUB_OUTPUT
+        fi
+      shell: bash
+
     - name: Create Coverage Badge
       if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ci')
       continue-on-error: true
@@ -142,5 +158,5 @@ jobs:
         filename: cyclotron-coverage.json
         label: code coverage
         message: ${{ steps.check_coverage.outputs.has_coverage == 'true' && steps.extract_coverage.outputs.coverage || steps.default_coverage.outputs.coverage }}%
-        color: green
+        color: ${{ steps.badge_color.outputs.color }}
         namedLogo: .NET
