@@ -1,6 +1,9 @@
+using Cyclotron.FileSystemAdapter;
 using Cyclotron.FileSystemAdapter.Abstractions.Handlers;
 using Cyclotron.FileSystemAdapter.Abstractions.Models;
+using Cyclotron.Extensions.DepepndencyInjection;
 using AwesomeAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 
 namespace Cyclotron.Tests.Unit.FileSystemAdapter;
@@ -581,6 +584,193 @@ public class FileSystemAdapterTests
     public void StorageOpenOptions_HasExpectedValues()
     {
         Enum.GetValues<StorageOpenOptions>().Should().HaveCount(3);
+    }
+
+    #endregion
+
+    #region FileSystemProvider - Singleton
+
+    [Test]
+    public void Instance_ReturnsNonNullInstance()
+    {
+        var instance = FileSystemProvider.Instance;
+
+        instance.Should().NotBeNull();
+    }
+
+    [Test]
+    public void Instance_ReturnsSameInstance_OnMultipleCalls()
+    {
+        var first = FileSystemProvider.Instance;
+        var second = FileSystemProvider.Instance;
+
+        first.Should().BeSameAs(second);
+    }
+
+    [Test]
+    public void GetService_ThrowsInvalidOperationException_WhenServiceProviderIsNull()
+    {
+        var instance = FileSystemProvider.Instance;
+
+        var act = () => instance.GetService<IFileHandler>();
+
+        act.Should().Throw<InvalidOperationException>();
+    }
+
+    [Test]
+    public void GetRequiredService_ThrowsInvalidOperationException_WhenServiceProviderIsNull()
+    {
+        var instance = FileSystemProvider.Instance;
+
+        var act = () => instance.GetRequiredService<IFileHandler>();
+
+        act.Should().Throw<InvalidOperationException>();
+    }
+
+    #endregion
+
+    #region ServiceCollectionExtensions - EnsureIfExists
+
+    [Test]
+    public void EnsureIfExists_ThrowsArgumentNullException_WhenServicesIsNull()
+    {
+        IServiceCollection? nullServices = null;
+
+        var act = () => nullServices!.EnsureIfExists<IFileHandler>();
+
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Test]
+    public void EnsureIfExists_ThrowsInvalidOperationException_WhenServiceTypeIsNotRegistered()
+    {
+        var services = new ServiceCollection();
+
+        var act = () => services.EnsureIfExists<IFileHandler>();
+
+        act.Should().Throw<InvalidOperationException>();
+    }
+
+    [Test]
+    public void EnsureIfExists_Succeeds_WhenServiceTypeIsRegistered()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton(Substitute.For<IFileHandler>());
+
+        var act = () => services.EnsureIfExists<IFileHandler>();
+
+        act.Should().NotThrow();
+    }
+
+    #endregion
+
+    #region Constants - File Type Filters
+
+    [Test]
+    public void AllTypeFilter_HasOneElement_WithWildcard()
+    {
+        Constants.AllTypeFilter.Should().HaveCount(1);
+        Constants.AllTypeFilter.Should().Contain("*");
+    }
+
+    [Test]
+    public void ImageTypeFilter_HasNineElements_WithExpectedExtensions()
+    {
+        Constants.ImageTypeFilter.Should().HaveCount(9);
+        Constants.ImageTypeFilter.Should().Contain(".bmp");
+        Constants.ImageTypeFilter.Should().Contain(".gif");
+        Constants.ImageTypeFilter.Should().Contain(".jpeg");
+        Constants.ImageTypeFilter.Should().Contain(".jpg");
+        Constants.ImageTypeFilter.Should().Contain(".png");
+    }
+
+    [Test]
+    public void VideoTypeFilter_HasSevenElements_WithExpectedExtensions()
+    {
+        Constants.VideoTypeFilter.Should().HaveCount(7);
+        Constants.VideoTypeFilter.Should().Contain(".mp4");
+        Constants.VideoTypeFilter.Should().Contain(".avi");
+        Constants.VideoTypeFilter.Should().Contain(".mov");
+    }
+
+    [Test]
+    public void AudioTypeFilter_HasSixElements_WithExpectedExtensions()
+    {
+        Constants.AudioTypeFilter.Should().HaveCount(6);
+        Constants.AudioTypeFilter.Should().Contain(".mp3");
+        Constants.AudioTypeFilter.Should().Contain(".wav");
+        Constants.AudioTypeFilter.Should().Contain(".flac");
+    }
+
+    [Test]
+    public void DocumentTypeFilter_HasEightElements_WithExpectedExtensions()
+    {
+        Constants.DocumentTypeFilter.Should().HaveCount(8);
+        Constants.DocumentTypeFilter.Should().Contain(".pdf");
+        Constants.DocumentTypeFilter.Should().Contain(".doc");
+        Constants.DocumentTypeFilter.Should().Contain(".docx");
+        Constants.DocumentTypeFilter.Should().Contain(".txt");
+    }
+
+    [Test]
+    public void CompressedTypeFilter_HasEightElements_WithExpectedExtensions()
+    {
+        Constants.CompressedTypeFilter.Should().HaveCount(8);
+        Constants.CompressedTypeFilter.Should().Contain(".zip");
+        Constants.CompressedTypeFilter.Should().Contain(".rar");
+        Constants.CompressedTypeFilter.Should().Contain(".7z");
+    }
+
+    #endregion
+
+    #region Constants - Read-Only Enforcement
+
+    [Test]
+    public void AllTypeFilter_IsReadOnly_ThrowsOnAdd()
+    {
+        var act = () => Constants.AllTypeFilter.Add("test");
+
+        act.Should().Throw<NotSupportedException>();
+    }
+
+    [Test]
+    public void ImageTypeFilter_IsReadOnly_ThrowsOnAdd()
+    {
+        var act = () => Constants.ImageTypeFilter.Add("test");
+
+        act.Should().Throw<NotSupportedException>();
+    }
+
+    [Test]
+    public void VideoTypeFilter_IsReadOnly_ThrowsOnAdd()
+    {
+        var act = () => Constants.VideoTypeFilter.Add("test");
+
+        act.Should().Throw<NotSupportedException>();
+    }
+
+    [Test]
+    public void AudioTypeFilter_IsReadOnly_ThrowsOnAdd()
+    {
+        var act = () => Constants.AudioTypeFilter.Add("test");
+
+        act.Should().Throw<NotSupportedException>();
+    }
+
+    [Test]
+    public void DocumentTypeFilter_IsReadOnly_ThrowsOnAdd()
+    {
+        var act = () => Constants.DocumentTypeFilter.Add("test");
+
+        act.Should().Throw<NotSupportedException>();
+    }
+
+    [Test]
+    public void CompressedTypeFilter_IsReadOnly_ThrowsOnAdd()
+    {
+        var act = () => Constants.CompressedTypeFilter.Add("test");
+
+        act.Should().Throw<NotSupportedException>();
     }
 
     #endregion
