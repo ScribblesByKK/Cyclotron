@@ -1,6 +1,9 @@
+using Cyclotron.FileSystemAdapter;
 using Cyclotron.FileSystemAdapter.Abstractions.Handlers;
 using Cyclotron.FileSystemAdapter.Abstractions.Models;
+using Cyclotron.Extensions.DepepndencyInjection;
 using AwesomeAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 
 namespace Cyclotron.Tests.Unit.FileSystemAdapter;
@@ -581,6 +584,82 @@ public class FileSystemAdapterTests
     public void StorageOpenOptions_HasExpectedValues()
     {
         Enum.GetValues<StorageOpenOptions>().Should().HaveCount(3);
+    }
+
+    #endregion
+
+    #region FileSystemProvider - Singleton
+
+    [Test]
+    public void Instance_ReturnsNonNullInstance()
+    {
+        var instance = FileSystemProvider.Instance;
+
+        instance.Should().NotBeNull();
+    }
+
+    [Test]
+    public void Instance_ReturnsSameInstance_OnMultipleCalls()
+    {
+        var first = FileSystemProvider.Instance;
+        var second = FileSystemProvider.Instance;
+
+        first.Should().BeSameAs(second);
+    }
+
+    [Test]
+    public void GetService_ThrowsInvalidOperationException_WhenServiceProviderIsNull()
+    {
+        var instance = FileSystemProvider.Instance;
+
+        var act = () => instance.GetService<IFileHandler>();
+
+        act.Should().Throw<InvalidOperationException>();
+    }
+
+    [Test]
+    public void GetRequiredService_ThrowsInvalidOperationException_WhenServiceProviderIsNull()
+    {
+        var instance = FileSystemProvider.Instance;
+
+        var act = () => instance.GetRequiredService<IFileHandler>();
+
+        act.Should().Throw<InvalidOperationException>();
+    }
+
+    #endregion
+
+    #region ServiceCollectionExtensions - EnsureIfExists
+
+    [Test]
+    public void EnsureIfExists_ThrowsArgumentNullException_WhenServicesIsNull()
+    {
+        IServiceCollection? nullServices = null;
+
+        var act = () => nullServices!.EnsureIfExists<IFileHandler>();
+
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Test]
+    public void EnsureIfExists_ThrowsInvalidOperationException_WhenServiceTypeIsNotRegistered()
+    {
+        var services = new ServiceCollection();
+
+        var act = () => services.EnsureIfExists<IFileHandler>();
+
+        act.Should().Throw<InvalidOperationException>();
+    }
+
+    [Test]
+    public void EnsureIfExists_Succeeds_WhenServiceTypeIsRegistered()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton(Substitute.For<IFileHandler>());
+
+        var act = () => services.EnsureIfExists<IFileHandler>();
+
+        act.Should().NotThrow();
     }
 
     #endregion
