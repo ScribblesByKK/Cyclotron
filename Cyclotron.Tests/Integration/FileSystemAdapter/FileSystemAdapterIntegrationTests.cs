@@ -1,6 +1,10 @@
+using Cyclotron.FileSystemAdapter;
+using Cyclotron.FileSystemAdapter.Abstractions.Handlers;
+using Cyclotron.FileSystemAdapter.Abstractions.Models;
+using Cyclotron.FileSystemAdapter.WinUI;
 using Cyclotron.Tests.Integration.Fixtures;
-using Cyclotron.Tests.TestHelpers;
 using AwesomeAssertions;
+using WinStorage = Windows.Storage;
 
 namespace Cyclotron.Tests.Integration.FileSystemAdapter;
 
@@ -9,11 +13,17 @@ namespace Cyclotron.Tests.Integration.FileSystemAdapter;
 public class FileSystemAdapterIntegrationTests
 {
     private TempFileSystemFixture _fixture = null!;
+    private IFolderHandler _folderHandler = null!;
+    private IFileHandler _fileHandler = null!;
+    private IFolder _rootFolder = null!;
 
     [Before(Test)]
-    public void Setup()
+    public async Task Setup()
     {
         _fixture = new TempFileSystemFixture();
+        _folderHandler = FileSystemProvider.Instance.GetRequiredService<IFolderHandler>();
+        _fileHandler = FileSystemProvider.Instance.GetRequiredService<IFileHandler>();
+        _rootFolder = await _folderHandler.GetFolderFromPathAsync(_fixture.RootPath);
     }
 
     [After(Test)]
@@ -22,342 +32,726 @@ public class FileSystemAdapterIntegrationTests
         await _fixture.DisposeAsync();
     }
 
-    #region Write and Read Operations
+    #region WinUIFolder - Properties
 
     [Test]
-    public async Task WriteAllTextAsync_ThenReadAllTextAsync_ReturnsSameContent()
+    public void WinUIFolder_Name_ReturnsCorrectName()
     {
-        var filePath = _fixture.GetTempFilePath("test.txt");
-        const string content = "Hello, Cyclotron!";
-
-        await File.WriteAllTextAsync(filePath, content);
-        var readContent = await File.ReadAllTextAsync(filePath);
-
-        readContent.Should().Be(content);
+        _rootFolder.Name.Should().NotBeNullOrEmpty();
     }
 
     [Test]
-    public async Task WriteAllTextAsync_WithUtf8Encoding_PreservesContent()
+    public void WinUIFolder_Path_ReturnsRootPath()
     {
-        var filePath = _fixture.GetTempFilePath("utf8.txt");
-        const string content = "こんにちは世界 🌍 Ñoño";
-
-        await File.WriteAllTextAsync(filePath, content, System.Text.Encoding.UTF8);
-        var readContent = await File.ReadAllTextAsync(filePath, System.Text.Encoding.UTF8);
-
-        readContent.Should().Be(content);
+        _rootFolder.Path.Should().Be(_fixture.RootPath);
     }
 
     [Test]
-    public async Task WriteAllBytesAsync_ThenReadAllBytesAsync_PreservesBinaryData()
+    public void WinUIFolder_FolderRelativeId_IsNotEmpty()
     {
-        var filePath = _fixture.GetTempFilePath("binary.dat");
-        var bytes = FileSystemTestHelpers.GenerateRandomBytes(1024);
-
-        await File.WriteAllBytesAsync(filePath, bytes);
-        var readBytes = await File.ReadAllBytesAsync(filePath);
-
-        readBytes.Should().BeEquivalentTo(bytes);
-    }
-
-    [Test]
-    public async Task WriteAllBytesAsync_EmptyArray_CreatesEmptyFile()
-    {
-        var filePath = _fixture.GetTempFilePath("empty.dat");
-        var bytes = Array.Empty<byte>();
-
-        await File.WriteAllBytesAsync(filePath, bytes);
-        var readBytes = await File.ReadAllBytesAsync(filePath);
-
-        readBytes.Should().BeEmpty();
+        _rootFolder.FolderRelativeId.Should().NotBeNullOrEmpty();
     }
 
     #endregion
 
-    #region File Existence
+    #region WinUIFolderHandler - Create
 
     [Test]
-    public async Task FileExists_ReturnsTrue_WhenFileExists()
+    public async Task FolderHandler_CreateFileAsync_CreatesFile()
     {
-        var filePath = _fixture.GetTempFilePath("exists.txt");
-        await File.WriteAllTextAsync(filePath, "content");
+        await _folderHandler.CreateFileAsync(_rootFolder, "created.txt");
 
-        File.Exists(filePath).Should().BeTrue();
+        File.Exists(Path.Combine(_fixture.RootPath, "created.txt")).Should().BeTrue();
     }
 
     [Test]
-    public void FileExists_ReturnsFalse_WhenFileDoesNotExist()
+    public async Task FolderHandler_CreateFileAsync_WithCollisionOption_CreatesFile()
     {
-        var filePath = _fixture.GetTempFilePath("nonexistent.txt");
+        await _folderHandler.CreateFileAsync(_rootFolder, "created2.txt", CreationCollisionOption.ReplaceExisting);
 
-        File.Exists(filePath).Should().BeFalse();
-    }
-
-    #endregion
-
-    #region Directory Operations
-
-    [Test]
-    public void CreateDirectory_CreatesNestedDirectories()
-    {
-        var dirPath = Path.Combine(_fixture.RootPath, "level1", "level2", "level3");
-
-        Directory.CreateDirectory(dirPath);
-
-        Directory.Exists(dirPath).Should().BeTrue();
+        File.Exists(Path.Combine(_fixture.RootPath, "created2.txt")).Should().BeTrue();
     }
 
     [Test]
-    public void CreateDirectory_IsIdempotent()
+    public async Task FolderHandler_CreateFolderAsync_CreatesSubfolder()
     {
-        var dirPath = _fixture.GetTempDirectoryPath("idempotent");
+        await _folderHandler.CreateFolderAsync(_rootFolder, "subfolder");
 
-        Directory.CreateDirectory(dirPath);
-        Directory.CreateDirectory(dirPath);
-
-        Directory.Exists(dirPath).Should().BeTrue();
+        Directory.Exists(Path.Combine(_fixture.RootPath, "subfolder")).Should().BeTrue();
     }
 
     [Test]
-    public void DeleteDirectory_RemovesEmptyDirectory()
+    public async Task FolderHandler_CreateFolderAsync_WithCollisionOption_CreatesSubfolder()
     {
-        var dirPath = _fixture.GetTempDirectoryPath("todelete");
-        Directory.CreateDirectory(dirPath);
+        await _folderHandler.CreateFolderAsync(_rootFolder, "subfolder2", CreationCollisionOption.OpenIfExists);
 
-        Directory.Delete(dirPath);
-
-        Directory.Exists(dirPath).Should().BeFalse();
-    }
-
-    [Test]
-    public async Task DeleteDirectory_Recursive_RemovesNestedContent()
-    {
-        var dirPath = _fixture.GetTempDirectoryPath("recursive");
-        var subDir = Path.Combine(dirPath, "sub");
-        Directory.CreateDirectory(subDir);
-        await File.WriteAllTextAsync(Path.Combine(subDir, "file.txt"), "content");
-
-        Directory.Delete(dirPath, recursive: true);
-
-        Directory.Exists(dirPath).Should().BeFalse();
-    }
-
-    [Test]
-    public async Task EnumerateFiles_ReturnsCorrectFiles()
-    {
-        var dirPath = _fixture.GetTempDirectoryPath("enumerate");
-        Directory.CreateDirectory(dirPath);
-        await File.WriteAllTextAsync(Path.Combine(dirPath, "file1.txt"), "a");
-        await File.WriteAllTextAsync(Path.Combine(dirPath, "file2.txt"), "b");
-        await File.WriteAllTextAsync(Path.Combine(dirPath, "file3.log"), "c");
-
-        var txtFiles = Directory.EnumerateFiles(dirPath, "*.txt").ToList();
-
-        txtFiles.Should().HaveCount(2);
-    }
-
-    [Test]
-    public void EnumerateFiles_EmptyDirectory_ReturnsEmpty()
-    {
-        var dirPath = _fixture.GetTempDirectoryPath("empty");
-        Directory.CreateDirectory(dirPath);
-
-        var files = Directory.EnumerateFiles(dirPath).ToList();
-
-        files.Should().BeEmpty();
-    }
-
-    [Test]
-    public async Task EnumerateFiles_Recursive_TraversesSubdirectories()
-    {
-        var dirPath = _fixture.GetTempDirectoryPath("deepenum");
-        var subDir = Path.Combine(dirPath, "sub");
-        Directory.CreateDirectory(subDir);
-        await File.WriteAllTextAsync(Path.Combine(dirPath, "root.txt"), "r");
-        await File.WriteAllTextAsync(Path.Combine(subDir, "child.txt"), "c");
-
-        var files = Directory.EnumerateFiles(dirPath, "*.*", SearchOption.AllDirectories).ToList();
-
-        files.Should().HaveCount(2);
+        Directory.Exists(Path.Combine(_fixture.RootPath, "subfolder2")).Should().BeTrue();
     }
 
     #endregion
 
-    #region File Manipulation
+    #region WinUIFolderHandler - Retrieve
 
     [Test]
-    public async Task FileCopy_CreatesIdenticalCopy()
+    public async Task FolderHandler_GetFileAsync_ByName_ReturnsWinUIFile()
     {
-        var sourcePath = _fixture.GetTempFilePath("source.txt");
-        var destPath = _fixture.GetTempFilePath("dest.txt");
-        const string content = "Copy this content";
-        await File.WriteAllTextAsync(sourcePath, content);
+        await _folderHandler.CreateFileAsync(_rootFolder, "get.txt");
 
-        File.Copy(sourcePath, destPath);
+        var file = await _folderHandler.GetFileAsync(_rootFolder, "get.txt");
 
-        File.Exists(destPath).Should().BeTrue();
-        (await File.ReadAllTextAsync(destPath)).Should().Be(content);
+        file.Should().NotBeNull();
+        file.Name.Should().Be("get.txt");
     }
 
     [Test]
-    public async Task FileMove_MovesFileToNewLocation()
+    public async Task FolderHandler_GetFileAsync_AllFiles_ReturnsList()
     {
-        var sourcePath = _fixture.GetTempFilePath("tomove.txt");
-        var destPath = _fixture.GetTempFilePath("moved.txt");
-        await File.WriteAllTextAsync(sourcePath, "move me");
+        await _folderHandler.CreateFileAsync(_rootFolder, "a.txt");
+        await _folderHandler.CreateFileAsync(_rootFolder, "b.txt");
 
-        File.Move(sourcePath, destPath);
+        var files = await _folderHandler.GetFileAsync(_rootFolder);
 
-        File.Exists(sourcePath).Should().BeFalse();
-        File.Exists(destPath).Should().BeTrue();
+        files.Should().HaveCountGreaterThanOrEqualTo(2);
     }
 
     [Test]
-    public async Task FileDelete_RemovesFileFromDisk()
+    public async Task FolderHandler_GetFolderAsync_ByName_ReturnsSubfolder()
     {
-        var filePath = _fixture.GetTempFilePath("todelete.txt");
-        await File.WriteAllTextAsync(filePath, "delete me");
+        await _folderHandler.CreateFolderAsync(_rootFolder, "sub");
 
-        File.Delete(filePath);
+        var sub = await _folderHandler.GetFolderAsync(_rootFolder, "sub");
 
-        File.Exists(filePath).Should().BeFalse();
+        sub.Should().NotBeNull();
+        sub.Name.Should().Be("sub");
     }
 
     [Test]
-    public async Task FileMove_AcrossDirectories_Works()
+    public async Task FolderHandler_GetFoldersAsync_ReturnsList()
     {
-        var dir1 = _fixture.GetTempDirectoryPath("dir1");
-        var dir2 = _fixture.GetTempDirectoryPath("dir2");
-        Directory.CreateDirectory(dir1);
-        Directory.CreateDirectory(dir2);
-        var sourcePath = Path.Combine(dir1, "file.txt");
-        var destPath = Path.Combine(dir2, "file.txt");
-        await File.WriteAllTextAsync(sourcePath, "cross-dir move");
+        await _folderHandler.CreateFolderAsync(_rootFolder, "sub1");
+        await _folderHandler.CreateFolderAsync(_rootFolder, "sub2");
 
-        File.Move(sourcePath, destPath);
+        var folders = await _folderHandler.GetFoldersAsync(_rootFolder);
 
-        File.Exists(sourcePath).Should().BeFalse();
-        File.Exists(destPath).Should().BeTrue();
-        (await File.ReadAllTextAsync(destPath)).Should().Be("cross-dir move");
-    }
-
-    #endregion
-
-    #region Special Characters
-
-    [Test]
-    public async Task FileOperations_WithSpacesInName_Work()
-    {
-        var filePath = _fixture.GetTempFilePath("file with spaces.txt");
-        await File.WriteAllTextAsync(filePath, "content");
-
-        File.Exists(filePath).Should().BeTrue();
-        (await File.ReadAllTextAsync(filePath)).Should().Be("content");
+        folders.Should().HaveCountGreaterThanOrEqualTo(2);
     }
 
     [Test]
-    public async Task FileOperations_WithUnicodeInName_Work()
+    public async Task FolderHandler_GetItemAsync_ReturnsItem()
     {
-        var filePath = _fixture.GetTempFilePath("файл_données_数据.txt");
-        await File.WriteAllTextAsync(filePath, "unicode content");
+        await _folderHandler.CreateFileAsync(_rootFolder, "item.txt");
 
-        File.Exists(filePath).Should().BeTrue();
-        (await File.ReadAllTextAsync(filePath)).Should().Be("unicode content");
-    }
+        var item = await _folderHandler.GetItemAsync(_rootFolder, "item.txt");
 
-    #endregion
-
-    #region Error Scenarios
-
-    [Test]
-    public void ReadNonExistentFile_ThrowsFileNotFoundException()
-    {
-        var filePath = _fixture.GetTempFilePath("nonexistent.txt");
-
-        var act = () => File.ReadAllText(filePath);
-
-        act.Should().Throw<FileNotFoundException>();
+        item.Should().NotBeNull();
+        item.Name.Should().Be("item.txt");
     }
 
     [Test]
-    public void DeleteNonExistentFile_DoesNotThrow()
+    public async Task FolderHandler_GetItemsAsync_ReturnsAllItems()
     {
-        var filePath = _fixture.GetTempFilePath("nonexistent.txt");
+        await _folderHandler.CreateFileAsync(_rootFolder, "f.txt");
+        await _folderHandler.CreateFolderAsync(_rootFolder, "d");
 
-        var act = () => File.Delete(filePath);
+        var items = await _folderHandler.GetItemsAsync(_rootFolder);
 
-        act.Should().NotThrow();
+        items.Should().HaveCountGreaterThanOrEqualTo(2);
+    }
+
+    [Test]
+    public async Task FolderHandler_TryGetItemAsync_ReturnsItem_WhenExists()
+    {
+        await _folderHandler.CreateFileAsync(_rootFolder, "tryget.txt");
+
+        var item = await _folderHandler.TryGetItemAsync(_rootFolder, "tryget.txt");
+
+        item.Should().NotBeNull();
+    }
+
+    [Test]
+    public async Task FolderHandler_TryGetItemAsync_ReturnsNull_WhenNotExists()
+    {
+        var item = await _folderHandler.TryGetItemAsync(_rootFolder, "nonexistent.txt");
+
+        item.Should().BeNull();
+    }
+
+    [Test]
+    public async Task FolderHandler_GetParentAsync_ReturnsParent()
+    {
+        await _folderHandler.CreateFolderAsync(_rootFolder, "child");
+        var child = await _folderHandler.GetFolderAsync(_rootFolder, "child");
+
+        var parent = await _folderHandler.GetParentAsync(child);
+
+        parent.Should().NotBeNull();
+        parent.Path.Should().Be(_fixture.RootPath);
     }
 
     #endregion
 
-    #region Concurrency
+    #region WinUIFolderHandler - Rename & Delete
 
     [Test]
-    public async Task ParallelWrites_ToDifferentFiles_AllSucceed()
+    public async Task FolderHandler_RenameAsync_RenamesFolder()
     {
-        var tasks = Enumerable.Range(0, 50).Select(async i =>
-        {
-            var filePath = _fixture.GetTempFilePath($"parallel_{i}.txt");
-            await File.WriteAllTextAsync(filePath, $"Content {i}");
-        });
+        await _folderHandler.CreateFolderAsync(_rootFolder, "original");
+        var original = await _folderHandler.GetFolderAsync(_rootFolder, "original");
 
-        await Task.WhenAll(tasks);
+        await _folderHandler.RenameAsync(original, "renamed");
 
-        var files = Directory.EnumerateFiles(_fixture.RootPath, "parallel_*.txt").ToList();
-        files.Should().HaveCount(50);
+        Directory.Exists(Path.Combine(_fixture.RootPath, "renamed")).Should().BeTrue();
     }
 
     [Test]
-    public async Task ParallelReads_FromSameFile_AllSucceed()
+    public async Task FolderHandler_RenameAsync_WithCollisionOption_RenamesFolder()
     {
-        var filePath = _fixture.GetTempFilePath("shared_read.txt");
-        const string content = "Shared content for reading";
-        await File.WriteAllTextAsync(filePath, content);
+        await _folderHandler.CreateFolderAsync(_rootFolder, "orig2");
+        var folder = await _folderHandler.GetFolderAsync(_rootFolder, "orig2");
 
-        var tasks = Enumerable.Range(0, 20).Select(async _ =>
-        {
-            var readContent = await File.ReadAllTextAsync(filePath);
-            return readContent;
-        });
+        await _folderHandler.RenameAsync(folder, "ren2", NameCollisionOption.GenerateUniqueName);
 
-        var results = await Task.WhenAll(tasks);
-        results.Should().AllBe(content);
+        Directory.Exists(Path.Combine(_fixture.RootPath, "orig2")).Should().BeFalse();
+    }
+
+    [Test]
+    public async Task FolderHandler_DeleteAsync_DeletesFolder()
+    {
+        await _folderHandler.CreateFolderAsync(_rootFolder, "todelete");
+        var toDelete = await _folderHandler.GetFolderAsync(_rootFolder, "todelete");
+
+        await _folderHandler.DeleteAsync(toDelete);
+
+        Directory.Exists(Path.Combine(_fixture.RootPath, "todelete")).Should().BeFalse();
+    }
+
+    [Test]
+    public async Task FolderHandler_DeleteAsync_WithOption_DeletesFolder()
+    {
+        await _folderHandler.CreateFolderAsync(_rootFolder, "perm");
+        var perm = await _folderHandler.GetFolderAsync(_rootFolder, "perm");
+
+        await _folderHandler.DeleteAsync(perm, StorageDeletionOption.PermanentDelete);
+
+        Directory.Exists(Path.Combine(_fixture.RootPath, "perm")).Should().BeFalse();
     }
 
     #endregion
 
-    #region TempFileSystemFixture Tests
+    #region WinUIFileHandler - Get & Properties
 
     [Test]
-    public void Fixture_CreatesRootDirectory()
+    public async Task FileHandler_GetFileFromPathAsync_ReturnsWinUIFile()
     {
-        Directory.Exists(_fixture.RootPath).Should().BeTrue();
+        var path = _fixture.GetTempFilePath("read.txt");
+        await File.WriteAllTextAsync(path, "hello");
+
+        var file = await _fileHandler.GetFileFromPathAsync(path);
+
+        file.Should().NotBeNull();
+        file.Name.Should().Be("read.txt");
+        file.Path.Should().Be(path);
+        file.FolderRelativeId.Should().NotBeNullOrEmpty();
     }
 
     [Test]
-    public void Fixture_GetTempFilePath_ReturnsPathInRootDirectory()
+    public async Task WinUIFile_GetSizeAsync_ReturnsFileSize()
     {
-        var path = _fixture.GetTempFilePath();
+        var path = _fixture.GetTempFilePath("sized.txt");
+        await File.WriteAllTextAsync(path, "hello");
 
-        Path.GetDirectoryName(path).Should().Be(_fixture.RootPath);
+        var file = await _fileHandler.GetFileFromPathAsync(path);
+        var size = await file.GetSizeAsync();
+
+        size.Should().BeGreaterThan(0);
     }
 
     [Test]
-    public void Fixture_GetTempFilePath_WithCustomName_UsesProvidedName()
+    public async Task FileHandler_GetParentAsync_ReturnsParentFolder()
     {
-        var path = _fixture.GetTempFilePath("custom.txt");
+        var path = _fixture.GetTempFilePath("parented.txt");
+        await File.WriteAllTextAsync(path, "content");
+        var file = await _fileHandler.GetFileFromPathAsync(path);
 
-        Path.GetFileName(path).Should().Be("custom.txt");
+        var parent = await _fileHandler.GetParentAsync(file);
+
+        parent.Should().NotBeNull();
+        parent.Path.Should().Be(_fixture.RootPath);
+    }
+
+    #endregion
+
+    #region WinUIFileHandler - Rename
+
+    [Test]
+    public async Task FileHandler_RenameAsync_RenamesFile()
+    {
+        await _folderHandler.CreateFileAsync(_rootFolder, "orig.txt");
+        var file = await _folderHandler.GetFileAsync(_rootFolder, "orig.txt");
+
+        await _fileHandler.RenameAsync(file, "renamed.txt");
+
+        File.Exists(Path.Combine(_fixture.RootPath, "renamed.txt")).Should().BeTrue();
     }
 
     [Test]
-    public void Fixture_GetTempDirectoryPath_ReturnsPathInRootDirectory()
+    public async Task FileHandler_RenameAsync_WithCollisionOption_RenamesFile()
     {
-        var path = _fixture.GetTempDirectoryPath();
+        await _folderHandler.CreateFileAsync(_rootFolder, "orig2.txt");
+        var file = await _folderHandler.GetFileAsync(_rootFolder, "orig2.txt");
 
-        Path.GetDirectoryName(path).Should().Be(_fixture.RootPath);
+        await _fileHandler.RenameAsync(file, "ren2.txt", NameCollisionOption.GenerateUniqueName);
+
+        File.Exists(Path.Combine(_fixture.RootPath, "orig2.txt")).Should().BeFalse();
+    }
+
+    #endregion
+
+    #region WinUIFileHandler - Copy
+
+    [Test]
+    public async Task FileHandler_CopyAsync_CopiesFile()
+    {
+        await _folderHandler.CreateFileAsync(_rootFolder, "src.txt");
+        var src = await _folderHandler.GetFileAsync(_rootFolder, "src.txt");
+        await _folderHandler.CreateFolderAsync(_rootFolder, "dest");
+        var destFolder = await _folderHandler.GetFolderAsync(_rootFolder, "dest");
+
+        await _fileHandler.CopyAsync(src, destFolder, "copied.txt", NameCollisionOption.ReplaceExisting);
+
+        File.Exists(Path.Combine(_fixture.RootPath, "dest", "copied.txt")).Should().BeTrue();
+    }
+
+    [Test]
+    public async Task FileHandler_CopyAndReplaceAsync_ReplacesDestFile()
+    {
+        await _folderHandler.CreateFileAsync(_rootFolder, "csrc.txt");
+        await _folderHandler.CreateFileAsync(_rootFolder, "cdest.txt");
+        var src = await _folderHandler.GetFileAsync(_rootFolder, "csrc.txt");
+        var dest = await _folderHandler.GetFileAsync(_rootFolder, "cdest.txt");
+
+        await _fileHandler.CopyAndReplaceAsync(src, dest);
+
+        File.Exists(Path.Combine(_fixture.RootPath, "cdest.txt")).Should().BeTrue();
+    }
+
+    #endregion
+
+    #region WinUIFileHandler - Move
+
+    [Test]
+    public async Task FileHandler_MoveAsync_ToFolder_MovesFile()
+    {
+        await _folderHandler.CreateFileAsync(_rootFolder, "msrc.txt");
+        var src = await _folderHandler.GetFileAsync(_rootFolder, "msrc.txt");
+        await _folderHandler.CreateFolderAsync(_rootFolder, "mdest");
+        var destFolder = await _folderHandler.GetFolderAsync(_rootFolder, "mdest");
+
+        await _fileHandler.MoveAsync(src, destFolder);
+
+        File.Exists(Path.Combine(_fixture.RootPath, "mdest", "msrc.txt")).Should().BeTrue();
+    }
+
+    [Test]
+    public async Task FileHandler_MoveAsync_WithName_MovesFile()
+    {
+        await _folderHandler.CreateFileAsync(_rootFolder, "msrc2.txt");
+        var src = await _folderHandler.GetFileAsync(_rootFolder, "msrc2.txt");
+        await _folderHandler.CreateFolderAsync(_rootFolder, "mdest2");
+        var destFolder = await _folderHandler.GetFolderAsync(_rootFolder, "mdest2");
+
+        await _fileHandler.MoveAsync(src, destFolder, "moved2.txt");
+
+        File.Exists(Path.Combine(_fixture.RootPath, "mdest2", "moved2.txt")).Should().BeTrue();
+    }
+
+    [Test]
+    public async Task FileHandler_MoveAsync_WithCollisionOption_MovesFile()
+    {
+        await _folderHandler.CreateFileAsync(_rootFolder, "msrc3.txt");
+        var src = await _folderHandler.GetFileAsync(_rootFolder, "msrc3.txt");
+        await _folderHandler.CreateFolderAsync(_rootFolder, "mdest3");
+        var destFolder = await _folderHandler.GetFolderAsync(_rootFolder, "mdest3");
+
+        await _fileHandler.MoveAsync(src, destFolder, "moved3.txt", NameCollisionOption.ReplaceExisting);
+
+        File.Exists(Path.Combine(_fixture.RootPath, "mdest3", "moved3.txt")).Should().BeTrue();
+    }
+
+    [Test]
+    public async Task FileHandler_MoveAndReplaceAsync_ReplacesDestFile()
+    {
+        await _folderHandler.CreateFileAsync(_rootFolder, "mrsrc.txt");
+        await _folderHandler.CreateFileAsync(_rootFolder, "mrdest.txt");
+        var src = await _folderHandler.GetFileAsync(_rootFolder, "mrsrc.txt");
+        var dest = await _folderHandler.GetFileAsync(_rootFolder, "mrdest.txt");
+
+        await _fileHandler.MoveAndReplaceAsync(src, dest);
+
+        File.Exists(Path.Combine(_fixture.RootPath, "mrdest.txt")).Should().BeTrue();
+        File.Exists(Path.Combine(_fixture.RootPath, "mrsrc.txt")).Should().BeFalse();
+    }
+
+    #endregion
+
+    #region WinUIFileHandler - Open
+
+    [Test]
+    public async Task FileHandler_OpenAsync_Read_DoesNotThrow()
+    {
+        var path = _fixture.GetTempFilePath("open.txt");
+        await File.WriteAllTextAsync(path, "content");
+        var file = await _fileHandler.GetFileFromPathAsync(path);
+
+        var act = async () => await _fileHandler.OpenAsync(file, FileAccessMode.Read);
+
+        await act.Should().NotThrowAsync();
+    }
+
+    [Test]
+    public async Task FileHandler_OpenAsync_WithStorageOptions_DoesNotThrow()
+    {
+        var path = _fixture.GetTempFilePath("open2.txt");
+        await File.WriteAllTextAsync(path, "content");
+        var file = await _fileHandler.GetFileFromPathAsync(path);
+
+        var act = async () => await _fileHandler.OpenAsync(file, FileAccessMode.Read, StorageOpenOptions.AllowOnlyReaders);
+
+        await act.Should().NotThrowAsync();
+    }
+
+    #endregion
+
+    #region FileExtensions & FolderExtensions (via WinUI objects)
+
+    [Test]
+    public async Task FileExtensions_RenameAsync_RenamesFile()
+    {
+        await _folderHandler.CreateFileAsync(_rootFolder, "ext_orig.txt");
+        var file = await _folderHandler.GetFileAsync(_rootFolder, "ext_orig.txt");
+
+        await file.RenameAsync("ext_renamed.txt");
+
+        File.Exists(Path.Combine(_fixture.RootPath, "ext_renamed.txt")).Should().BeTrue();
+    }
+
+    [Test]
+    public async Task FileExtensions_RenameAsync_WithCollision_RenamesFile()
+    {
+        await _folderHandler.CreateFileAsync(_rootFolder, "ext_orig2.txt");
+        var file = await _folderHandler.GetFileAsync(_rootFolder, "ext_orig2.txt");
+
+        await file.RenameAsync("ext_ren2.txt", NameCollisionOption.GenerateUniqueName);
+
+        File.Exists(Path.Combine(_fixture.RootPath, "ext_orig2.txt")).Should().BeFalse();
+    }
+
+    [Test]
+    public async Task FileExtensions_GetParentAsync_ReturnsParent()
+    {
+        await _folderHandler.CreateFileAsync(_rootFolder, "ext_par.txt");
+        var file = await _folderHandler.GetFileAsync(_rootFolder, "ext_par.txt");
+
+        var parent = await file.GetParentAsync();
+
+        parent.Path.Should().Be(_fixture.RootPath);
+    }
+
+    [Test]
+    public async Task FileExtensions_MoveAsync_MovesFile()
+    {
+        await _folderHandler.CreateFileAsync(_rootFolder, "ext_mv.txt");
+        var file = await _folderHandler.GetFileAsync(_rootFolder, "ext_mv.txt");
+        await _folderHandler.CreateFolderAsync(_rootFolder, "ext_mvdest");
+        var dest = await _folderHandler.GetFolderAsync(_rootFolder, "ext_mvdest");
+
+        await file.MoveAsync(dest);
+
+        File.Exists(Path.Combine(_fixture.RootPath, "ext_mvdest", "ext_mv.txt")).Should().BeTrue();
+    }
+
+    [Test]
+    public async Task FileExtensions_MoveAsync_WithName_MovesFile()
+    {
+        await _folderHandler.CreateFileAsync(_rootFolder, "ext_mv2.txt");
+        var file = await _folderHandler.GetFileAsync(_rootFolder, "ext_mv2.txt");
+        await _folderHandler.CreateFolderAsync(_rootFolder, "ext_mvdest2");
+        var dest = await _folderHandler.GetFolderAsync(_rootFolder, "ext_mvdest2");
+
+        await file.MoveAsync(dest, "ext_moved2.txt");
+
+        File.Exists(Path.Combine(_fixture.RootPath, "ext_mvdest2", "ext_moved2.txt")).Should().BeTrue();
+    }
+
+    [Test]
+    public async Task FileExtensions_MoveAsync_WithCollision_MovesFile()
+    {
+        await _folderHandler.CreateFileAsync(_rootFolder, "ext_mv3.txt");
+        var file = await _folderHandler.GetFileAsync(_rootFolder, "ext_mv3.txt");
+        await _folderHandler.CreateFolderAsync(_rootFolder, "ext_mvdest3");
+        var dest = await _folderHandler.GetFolderAsync(_rootFolder, "ext_mvdest3");
+
+        await file.MoveAsync(dest, "ext_moved3.txt", NameCollisionOption.ReplaceExisting);
+
+        File.Exists(Path.Combine(_fixture.RootPath, "ext_mvdest3", "ext_moved3.txt")).Should().BeTrue();
+    }
+
+    [Test]
+    public async Task FileExtensions_CopyAsync_CopiesFile()
+    {
+        await _folderHandler.CreateFileAsync(_rootFolder, "ext_cp.txt");
+        var file = await _folderHandler.GetFileAsync(_rootFolder, "ext_cp.txt");
+        await _folderHandler.CreateFolderAsync(_rootFolder, "ext_cpdest");
+        var dest = await _folderHandler.GetFolderAsync(_rootFolder, "ext_cpdest");
+
+        await file.CopyAsync(dest, "ext_copied.txt", NameCollisionOption.ReplaceExisting);
+
+        File.Exists(Path.Combine(_fixture.RootPath, "ext_cpdest", "ext_copied.txt")).Should().BeTrue();
+    }
+
+    [Test]
+    public async Task FileExtensions_CopyAndReplaceAsync_ReplacesFile()
+    {
+        await _folderHandler.CreateFileAsync(_rootFolder, "ext_cpsrc.txt");
+        await _folderHandler.CreateFileAsync(_rootFolder, "ext_cpdst.txt");
+        var src = await _folderHandler.GetFileAsync(_rootFolder, "ext_cpsrc.txt");
+        var dst = await _folderHandler.GetFileAsync(_rootFolder, "ext_cpdst.txt");
+
+        await src.CopyAndReplaceAsync(dst);
+
+        File.Exists(Path.Combine(_fixture.RootPath, "ext_cpdst.txt")).Should().BeTrue();
+    }
+
+    [Test]
+    public async Task FileExtensions_MoveAndReplaceAsync_ReplacesFile()
+    {
+        await _folderHandler.CreateFileAsync(_rootFolder, "ext_mrsrc.txt");
+        await _folderHandler.CreateFileAsync(_rootFolder, "ext_mrdst.txt");
+        var src = await _folderHandler.GetFileAsync(_rootFolder, "ext_mrsrc.txt");
+        var dst = await _folderHandler.GetFileAsync(_rootFolder, "ext_mrdst.txt");
+
+        await src.MoveAndReplaceAsync(dst);
+
+        File.Exists(Path.Combine(_fixture.RootPath, "ext_mrsrc.txt")).Should().BeFalse();
+    }
+
+    [Test]
+    public async Task FileExtensions_OpenAsync_DoesNotThrow()
+    {
+        var path = _fixture.GetTempFilePath("ext_open.txt");
+        await File.WriteAllTextAsync(path, "data");
+        var file = await _fileHandler.GetFileFromPathAsync(path);
+
+        var act = async () => await file.OpenAsync(FileAccessMode.Read);
+
+        await act.Should().NotThrowAsync();
+    }
+
+    [Test]
+    public async Task FileExtensions_OpenAsync_WithOptions_DoesNotThrow()
+    {
+        var path = _fixture.GetTempFilePath("ext_open2.txt");
+        await File.WriteAllTextAsync(path, "data");
+        var file = await _fileHandler.GetFileFromPathAsync(path);
+
+        var act = async () => await file.OpenAsync(FileAccessMode.Read, StorageOpenOptions.AllowOnlyReaders);
+
+        await act.Should().NotThrowAsync();
+    }
+
+    [Test]
+    public async Task FolderExtensions_CreateFileAsync_CreatesFile()
+    {
+        await _rootFolder.CreateFileAsync("fext_create.txt");
+
+        File.Exists(Path.Combine(_fixture.RootPath, "fext_create.txt")).Should().BeTrue();
+    }
+
+    [Test]
+    public async Task FolderExtensions_CreateFileAsync_WithCollision_CreatesFile()
+    {
+        await _rootFolder.CreateFileAsync("fext_create2.txt", CreationCollisionOption.ReplaceExisting);
+
+        File.Exists(Path.Combine(_fixture.RootPath, "fext_create2.txt")).Should().BeTrue();
+    }
+
+    [Test]
+    public async Task FolderExtensions_CreateFolderAsync_CreatesSubfolder()
+    {
+        await _rootFolder.CreateFolderAsync("fext_sub");
+
+        Directory.Exists(Path.Combine(_fixture.RootPath, "fext_sub")).Should().BeTrue();
+    }
+
+    [Test]
+    public async Task FolderExtensions_CreateFolderAsync_WithCollision_CreatesSubfolder()
+    {
+        await _rootFolder.CreateFolderAsync("fext_sub2", CreationCollisionOption.OpenIfExists);
+
+        Directory.Exists(Path.Combine(_fixture.RootPath, "fext_sub2")).Should().BeTrue();
+    }
+
+    [Test]
+    public async Task FolderExtensions_GetFileAsync_ByName_ReturnsFile()
+    {
+        await _folderHandler.CreateFileAsync(_rootFolder, "fext_get.txt");
+
+        var file = await _rootFolder.GetFileAsync("fext_get.txt");
+
+        file.Name.Should().Be("fext_get.txt");
+    }
+
+    [Test]
+    public async Task FolderExtensions_GetFilesAsync_ReturnsList()
+    {
+        await _folderHandler.CreateFileAsync(_rootFolder, "fext_gfa.txt");
+
+        var files = await _rootFolder.GetFilesAsync();
+
+        files.Should().NotBeEmpty();
+    }
+
+    [Test]
+    public async Task FolderExtensions_GetFolderAsync_ReturnsSubfolder()
+    {
+        await _folderHandler.CreateFolderAsync(_rootFolder, "fext_gfo");
+
+        var folder = await _rootFolder.GetFolderAsync("fext_gfo");
+
+        folder.Name.Should().Be("fext_gfo");
+    }
+
+    [Test]
+    public async Task FolderExtensions_GetFoldersAsync_ReturnsList()
+    {
+        await _folderHandler.CreateFolderAsync(_rootFolder, "fext_gfoa");
+
+        var folders = await _rootFolder.GetFoldersAsync();
+
+        folders.Should().NotBeEmpty();
+    }
+
+    [Test]
+    public async Task FolderExtensions_GetItemAsync_ReturnsItem()
+    {
+        await _folderHandler.CreateFileAsync(_rootFolder, "fext_item.txt");
+
+        var item = await _rootFolder.GetItemAsync("fext_item.txt");
+
+        item.Name.Should().Be("fext_item.txt");
+    }
+
+    [Test]
+    public async Task FolderExtensions_GetItemsAsync_ReturnsList()
+    {
+        await _folderHandler.CreateFileAsync(_rootFolder, "fext_items.txt");
+
+        var items = await _rootFolder.GetItemsAsync();
+
+        items.Should().NotBeEmpty();
+    }
+
+    [Test]
+    public async Task FolderExtensions_GetParentAsync_ReturnsParent()
+    {
+        await _folderHandler.CreateFolderAsync(_rootFolder, "fext_child");
+        var child = await _folderHandler.GetFolderAsync(_rootFolder, "fext_child");
+
+        var parent = await child.GetParentAsync();
+
+        parent.Path.Should().Be(_fixture.RootPath);
+    }
+
+    [Test]
+    public async Task FolderExtensions_TryGetItemAsync_ReturnsItem_WhenExists()
+    {
+        await _folderHandler.CreateFileAsync(_rootFolder, "fext_try.txt");
+
+        var item = await _rootFolder.TryGetItemAsync("fext_try.txt");
+
+        item.Should().NotBeNull();
+    }
+
+    [Test]
+    public async Task FolderExtensions_TryGetItemAsync_ReturnsNull_WhenNotExists()
+    {
+        var item = await _rootFolder.TryGetItemAsync("fext_noexist.txt");
+
+        item.Should().BeNull();
+    }
+
+    [Test]
+    public async Task FolderExtensions_RenameAsync_RenamesFolder()
+    {
+        await _folderHandler.CreateFolderAsync(_rootFolder, "fext_ren");
+        var folder = await _folderHandler.GetFolderAsync(_rootFolder, "fext_ren");
+
+        await folder.RenameAsync("fext_renamed");
+
+        Directory.Exists(Path.Combine(_fixture.RootPath, "fext_renamed")).Should().BeTrue();
+    }
+
+    [Test]
+    public async Task FolderExtensions_RenameAsync_WithCollision_RenamesFolder()
+    {
+        await _folderHandler.CreateFolderAsync(_rootFolder, "fext_ren2");
+        var folder = await _folderHandler.GetFolderAsync(_rootFolder, "fext_ren2");
+
+        await folder.RenameAsync("fext_ren2b", NameCollisionOption.GenerateUniqueName);
+
+        Directory.Exists(Path.Combine(_fixture.RootPath, "fext_ren2")).Should().BeFalse();
+    }
+
+    [Test]
+    public async Task FolderExtensions_DeleteAsync_DeletesFolder()
+    {
+        await _folderHandler.CreateFolderAsync(_rootFolder, "fext_del");
+        var folder = await _folderHandler.GetFolderAsync(_rootFolder, "fext_del");
+
+        await folder.DeleteAsync();
+
+        Directory.Exists(Path.Combine(_fixture.RootPath, "fext_del")).Should().BeFalse();
+    }
+
+    [Test]
+    public async Task FolderExtensions_DeleteAsync_WithOption_DeletesFolder()
+    {
+        await _folderHandler.CreateFolderAsync(_rootFolder, "fext_delp");
+        var folder = await _folderHandler.GetFolderAsync(_rootFolder, "fext_delp");
+
+        await folder.DeleteAsync(StorageDeletionOption.PermanentDelete);
+
+        Directory.Exists(Path.Combine(_fixture.RootPath, "fext_delp")).Should().BeFalse();
+    }
+
+    #endregion
+
+    #region WinUI Storage Extensions (AsIFile / AsIFolder)
+
+    [Test]
+    public async Task StorageFile_AsIFile_ReturnsWinUIFile()
+    {
+        var path = _fixture.GetTempFilePath("asfile.txt");
+        await File.WriteAllTextAsync(path, "content");
+        var storageFile = await WinStorage.StorageFile.GetFileFromPathAsync(path);
+
+        var iFile = storageFile.AsIFile();
+
+        iFile.Should().NotBeNull();
+        iFile.Name.Should().Be("asfile.txt");
+    }
+
+    [Test]
+    public async Task StorageFolder_AsIFolder_ReturnsWinUIFolder()
+    {
+        var storageFolder = await WinStorage.StorageFolder.GetFolderFromPathAsync(_fixture.RootPath);
+
+        var iFolder = storageFolder.AsIFolder();
+
+        iFolder.Should().NotBeNull();
+        iFolder.Path.Should().Be(_fixture.RootPath);
     }
 
     #endregion
 }
+

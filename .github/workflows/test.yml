@@ -50,7 +50,7 @@ jobs:
       if: always()
       with:
         name: coverage-report
-        path: Cyclotron.Tests/bin/Release/net10.0/TestResults/coverage.cobertura.xml
+        path: Cyclotron.Tests/bin/Release/net10.0-windows10.0.26100.0/TestResults/coverage.cobertura.xml
         retention-days: 1
 
   coverage:

@@ -608,23 +608,23 @@ public class FileSystemAdapterTests
     }
 
     [Test]
-    public void GetService_ThrowsInvalidOperationException_WhenServiceProviderIsNull()
+    public void GetService_ReturnsService_WhenInitialized()
     {
         var instance = FileSystemProvider.Instance;
 
-        var act = () => instance.GetService<IFileHandler>();
+        var result = instance.GetService<IFileHandler>();
 
-        act.Should().Throw<InvalidOperationException>();
+        result.Should().NotBeNull();
     }
 
     [Test]
-    public void GetRequiredService_ThrowsInvalidOperationException_WhenServiceProviderIsNull()
+    public void GetRequiredService_ReturnsService_WhenInitialized()
     {
         var instance = FileSystemProvider.Instance;
 
-        var act = () => instance.GetRequiredService<IFileHandler>();
+        var result = instance.GetRequiredService<IFolderHandler>();
 
-        act.Should().Throw<InvalidOperationException>();
+        result.Should().NotBeNull();
     }
 
     #endregion
@@ -660,6 +660,230 @@ public class FileSystemAdapterTests
         var act = () => services.EnsureIfExists<IFileHandler>();
 
         act.Should().NotThrow();
+    }
+
+    #endregion
+
+    #region WinUI Handler - Argument Guards (non-WinUI objects)
+
+    [Test]
+    public async Task WinUIFileHandler_CopyAndReplaceAsync_ThrowsArgumentException_WhenSourceNotWinUIFile()
+    {
+        var handler = FileSystemProvider.Instance.GetRequiredService<IFileHandler>();
+        var mockFile = Substitute.For<IFile>();
+
+        var act = async () => await handler.CopyAndReplaceAsync(mockFile, mockFile);
+
+        await act.Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Test]
+    public async Task WinUIFileHandler_CopyAsync_ThrowsArgumentException_WhenSourceNotWinUIFile()
+    {
+        var handler = FileSystemProvider.Instance.GetRequiredService<IFileHandler>();
+        var mockFile = Substitute.For<IFile>();
+        var mockFolder = Substitute.For<IFolder>();
+
+        var act = async () => await handler.CopyAsync(mockFile, mockFolder, "copy.txt", NameCollisionOption.ReplaceExisting);
+
+        await act.Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Test]
+    public async Task WinUIFileHandler_GetParentAsync_ThrowsArgumentException_WhenFileNotWinUIFile()
+    {
+        var handler = FileSystemProvider.Instance.GetRequiredService<IFileHandler>();
+        var mockFile = Substitute.For<IFile>();
+
+        var act = async () => await handler.GetParentAsync(mockFile);
+
+        await act.Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Test]
+    public async Task WinUIFileHandler_MoveAndReplaceAsync_ThrowsArgumentException_WhenSourceNotWinUIFile()
+    {
+        var handler = FileSystemProvider.Instance.GetRequiredService<IFileHandler>();
+        var mockFile = Substitute.For<IFile>();
+
+        var act = async () => await handler.MoveAndReplaceAsync(mockFile, mockFile);
+
+        await act.Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Test]
+    public async Task WinUIFileHandler_MoveAsync_ThrowsArgumentException_WhenFileNotWinUIFile()
+    {
+        var handler = FileSystemProvider.Instance.GetRequiredService<IFileHandler>();
+        var mockFile = Substitute.For<IFile>();
+        var mockFolder = Substitute.For<IFolder>();
+
+        var act = async () => await handler.MoveAsync(mockFile, mockFolder);
+
+        await act.Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Test]
+    public async Task WinUIFileHandler_OpenAsync_ThrowsArgumentException_WhenFileNotWinUIFile()
+    {
+        var handler = FileSystemProvider.Instance.GetRequiredService<IFileHandler>();
+        var mockFile = Substitute.For<IFile>();
+
+        var act = async () => await handler.OpenAsync(mockFile, FileAccessMode.Read);
+
+        await act.Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Test]
+    public async Task WinUIFileHandler_OpenAsync_WithOptions_ThrowsArgumentException_WhenFileNotWinUIFile()
+    {
+        var handler = FileSystemProvider.Instance.GetRequiredService<IFileHandler>();
+        var mockFile = Substitute.For<IFile>();
+
+        var act = async () => await handler.OpenAsync(mockFile, FileAccessMode.Read, StorageOpenOptions.AllowOnlyReaders);
+
+        await act.Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Test]
+    public async Task WinUIFileHandler_RenameAsync_ThrowsArgumentException_WhenFileNotWinUIFile()
+    {
+        var handler = FileSystemProvider.Instance.GetRequiredService<IFileHandler>();
+        var mockFile = Substitute.For<IFile>();
+
+        var act = async () => await handler.RenameAsync(mockFile, "new.txt");
+
+        await act.Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Test]
+    public async Task WinUIFileHandler_RenameAsync_WithCollision_ThrowsArgumentException_WhenFileNotWinUIFile()
+    {
+        var handler = FileSystemProvider.Instance.GetRequiredService<IFileHandler>();
+        var mockFile = Substitute.For<IFile>();
+
+        var act = async () => await handler.RenameAsync(mockFile, "new.txt", NameCollisionOption.GenerateUniqueName);
+
+        await act.Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Test]
+    public async Task WinUIFolderHandler_CreateFileAsync_ThrowsArgumentException_WhenFolderNotWinUIFolder()
+    {
+        var handler = FileSystemProvider.Instance.GetRequiredService<IFolderHandler>();
+        var mockFolder = Substitute.For<IFolder>();
+
+        var act = async () => await handler.CreateFileAsync(mockFolder, "test.txt");
+
+        await act.Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Test]
+    public async Task WinUIFolderHandler_CreateFolderAsync_ThrowsArgumentException_WhenFolderNotWinUIFolder()
+    {
+        var handler = FileSystemProvider.Instance.GetRequiredService<IFolderHandler>();
+        var mockFolder = Substitute.For<IFolder>();
+
+        var act = async () => await handler.CreateFolderAsync(mockFolder, "sub");
+
+        await act.Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Test]
+    public async Task WinUIFolderHandler_DeleteAsync_ThrowsArgumentException_WhenFolderNotWinUIFolder()
+    {
+        var handler = FileSystemProvider.Instance.GetRequiredService<IFolderHandler>();
+        var mockFolder = Substitute.For<IFolder>();
+
+        var act = async () => await handler.DeleteAsync(mockFolder);
+
+        await act.Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Test]
+    public async Task WinUIFolderHandler_GetFileAsync_ThrowsArgumentException_WhenFolderNotWinUIFolder()
+    {
+        var handler = FileSystemProvider.Instance.GetRequiredService<IFolderHandler>();
+        var mockFolder = Substitute.For<IFolder>();
+
+        var act = async () => await handler.GetFileAsync(mockFolder, "file.txt");
+
+        await act.Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Test]
+    public async Task WinUIFolderHandler_GetFolderAsync_ThrowsArgumentException_WhenFolderNotWinUIFolder()
+    {
+        var handler = FileSystemProvider.Instance.GetRequiredService<IFolderHandler>();
+        var mockFolder = Substitute.For<IFolder>();
+
+        var act = async () => await handler.GetFolderAsync(mockFolder, "sub");
+
+        await act.Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Test]
+    public async Task WinUIFolderHandler_RenameAsync_ThrowsArgumentException_WhenFolderNotWinUIFolder()
+    {
+        var handler = FileSystemProvider.Instance.GetRequiredService<IFolderHandler>();
+        var mockFolder = Substitute.For<IFolder>();
+
+        var act = async () => await handler.RenameAsync(mockFolder, "renamed");
+
+        await act.Should().ThrowAsync<ArgumentException>();
+    }
+
+    #endregion
+
+    #region Constants
+
+    [Test]
+    public void Constants_AllTypeFilter_ContainsWildcard()
+    {
+        Cyclotron.FileSystemAdapter.Constants.AllTypeFilter.Should().Contain("*");
+    }
+
+    [Test]
+    public void Constants_ImageTypeFilter_ContainsExpectedExtensions()
+    {
+        var filter = Cyclotron.FileSystemAdapter.Constants.ImageTypeFilter;
+        filter.Should().Contain(".png");
+        filter.Should().Contain(".jpg");
+        filter.Should().Contain(".jpeg");
+        filter.Should().NotBeEmpty();
+    }
+
+    [Test]
+    public void Constants_VideoTypeFilter_ContainsExpectedExtensions()
+    {
+        var filter = Cyclotron.FileSystemAdapter.Constants.VideoTypeFilter;
+        filter.Should().Contain(".mp4");
+        filter.Should().NotBeEmpty();
+    }
+
+    [Test]
+    public void Constants_AudioTypeFilter_ContainsExpectedExtensions()
+    {
+        var filter = Cyclotron.FileSystemAdapter.Constants.AudioTypeFilter;
+        filter.Should().Contain(".mp3");
+        filter.Should().NotBeEmpty();
+    }
+
+    [Test]
+    public void Constants_DocumentTypeFilter_ContainsExpectedExtensions()
+    {
+        var filter = Cyclotron.FileSystemAdapter.Constants.DocumentTypeFilter;
+        filter.Should().Contain(".pdf");
+        filter.Should().Contain(".docx");
+        filter.Should().NotBeEmpty();
+    }
+
+    [Test]
+    public void Constants_CompressedTypeFilter_ContainsExpectedExtensions()
+    {
+        var filter = Cyclotron.FileSystemAdapter.Constants.CompressedTypeFilter;
+        filter.Should().Contain(".zip");
+        filter.Should().NotBeEmpty();
     }
 
     #endregion
