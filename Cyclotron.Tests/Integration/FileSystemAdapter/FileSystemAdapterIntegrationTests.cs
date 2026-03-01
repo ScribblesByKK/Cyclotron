@@ -188,6 +188,18 @@ public class FileSystemAdapterIntegrationTests
         parent.Path.Should().Be(_fixture.RootPath);
     }
 
+    [Test]
+    public async Task FolderHandler_GetItemsAsync_ContainsFilesAndFolders()
+    {
+        await _folderHandler.CreateFileAsync(_rootFolder, "mix.txt");
+        await _folderHandler.CreateFolderAsync(_rootFolder, "mixdir");
+
+        var items = await _folderHandler.GetItemsAsync(_rootFolder);
+
+        items.Should().Contain(item => item is IFile, "expected at least one IFile in items");
+        items.Should().Contain(item => item is IFolder, "expected at least one IFolder in items");
+    }
+
     #endregion
 
     #region WinUIFolderHandler - Rename & Delete
@@ -416,6 +428,18 @@ public class FileSystemAdapterIntegrationTests
         var file = await _fileHandler.GetFileFromPathAsync(path);
 
         var act = async () => await _fileHandler.OpenAsync(file, FileAccessMode.Read, StorageOpenOptions.AllowOnlyReaders);
+
+        await act.Should().NotThrowAsync();
+    }
+
+    [Test]
+    public async Task FileHandler_OpenAsync_ReadWrite_DoesNotThrow()
+    {
+        var path = _fixture.GetTempFilePath("rw_open.txt");
+        await File.WriteAllTextAsync(path, "content");
+        var file = await _fileHandler.GetFileFromPathAsync(path);
+
+        var act = async () => await _fileHandler.OpenAsync(file, FileAccessMode.ReadWrite);
 
         await act.Should().NotThrowAsync();
     }
@@ -750,6 +774,118 @@ public class FileSystemAdapterIntegrationTests
 
         iFolder.Should().NotBeNull();
         iFolder.Path.Should().Be(_fixture.RootPath);
+    }
+
+    #endregion
+
+    #region Error Cases - Not Found
+
+    [Test]
+    public async Task FolderHandler_GetFileAsync_ThrowsFileNotFoundException_WhenFileNotFound()
+    {
+        var act = async () => await _folderHandler.GetFileAsync(_rootFolder, "nonexistent.txt");
+
+        await act.Should().ThrowAsync<FileNotFoundException>();
+    }
+
+    [Test]
+    public async Task FolderHandler_GetFolderAsync_ThrowsFileNotFoundException_WhenSubfolderNotFound()
+    {
+        var act = async () => await _folderHandler.GetFolderAsync(_rootFolder, "nonexistent");
+
+        await act.Should().ThrowAsync<FileNotFoundException>();
+    }
+
+    [Test]
+    public async Task FileHandler_GetFileFromPathAsync_ThrowsFileNotFoundException_WhenPathNotFound()
+    {
+        var nonexistentPath = Path.Combine(
+            Path.GetTempPath(), "Cyclotron.Tests", "nonexistent", Guid.NewGuid().ToString(), "file.txt");
+
+        var act = async () => await _fileHandler.GetFileFromPathAsync(nonexistentPath);
+
+        await act.Should().ThrowAsync<FileNotFoundException>();
+    }
+
+    [Test]
+    public async Task FolderHandler_GetFolderFromPathAsync_ThrowsFileNotFoundException_WhenPathNotFound()
+    {
+        var nonexistentPath = Path.Combine(
+            Path.GetTempPath(), "Cyclotron.Tests", "nonexistent", Guid.NewGuid().ToString());
+
+        var act = async () => await _folderHandler.GetFolderFromPathAsync(nonexistentPath);
+
+        await act.Should().ThrowAsync<FileNotFoundException>();
+    }
+
+    #endregion
+
+    #region Collision Option - FailIfExists
+
+    [Test]
+    public async Task FolderHandler_CreateFileAsync_WithFailIfExists_ThrowsException_WhenFileAlreadyExists()
+    {
+        await _folderHandler.CreateFileAsync(_rootFolder, "fail.txt");
+
+        var act = async () => await _folderHandler.CreateFileAsync(
+            _rootFolder, "fail.txt", CreationCollisionOption.FailIfExists);
+
+        await act.Should().ThrowAsync<IOException>();
+    }
+
+    [Test]
+    public async Task FolderHandler_CreateFolderAsync_WithFailIfExists_ThrowsException_WhenFolderAlreadyExists()
+    {
+        await _folderHandler.CreateFolderAsync(_rootFolder, "failsub");
+
+        var act = async () => await _folderHandler.CreateFolderAsync(
+            _rootFolder, "failsub", CreationCollisionOption.FailIfExists);
+
+        await act.Should().ThrowAsync<IOException>();
+    }
+
+    [Test]
+    public async Task FileHandler_RenameAsync_WithFailIfExists_ThrowsException_WhenNameExists()
+    {
+        await _folderHandler.CreateFileAsync(_rootFolder, "ren_src.txt");
+        await _folderHandler.CreateFileAsync(_rootFolder, "ren_dst.txt");
+        var file = await _folderHandler.GetFileAsync(_rootFolder, "ren_src.txt");
+
+        var act = async () => await _fileHandler.RenameAsync(file, "ren_dst.txt", NameCollisionOption.FailIfExists);
+
+        await act.Should().ThrowAsync<IOException>();
+    }
+
+    #endregion
+
+    #region Collision Option - GenerateUniqueName
+
+    [Test]
+    public async Task FolderHandler_CreateFileAsync_WithGenerateUniqueName_CreatesBothFiles()
+    {
+        await _folderHandler.CreateFileAsync(_rootFolder, "dup.txt");
+
+        var act = async () => await _folderHandler.CreateFileAsync(
+            _rootFolder, "dup.txt", CreationCollisionOption.GenerateUniqueName);
+
+        await act.Should().NotThrowAsync();
+        var files = await _folderHandler.GetFileAsync(_rootFolder);
+        files.Should().HaveCountGreaterThanOrEqualTo(2,
+            "both the original and the uniquely-named duplicate should exist");
+    }
+
+    [Test]
+    public async Task FolderHandler_CreateFolderAsync_WithGenerateUniqueName_CreatesBothFolders()
+    {
+        await _folderHandler.CreateFolderAsync(_rootFolder, "dupdir");
+
+        var act = async () => await _folderHandler.CreateFolderAsync(
+            _rootFolder, "dupdir", CreationCollisionOption.GenerateUniqueName);
+
+        await act.Should().NotThrowAsync();
+        var folders = await _folderHandler.GetFoldersAsync(_rootFolder);
+        folders.Should().HaveCountGreaterThanOrEqualTo(2,
+            "both the original and the uniquely-named duplicate should exist");
     }
 
     #endregion
