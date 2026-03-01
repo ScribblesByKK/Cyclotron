@@ -833,6 +833,254 @@ public class FileSystemAdapterTests
         await act.Should().ThrowAsync<ArgumentException>();
     }
 
+    [Test]
+    public async Task WinUIFileHandler_CopyAndReplaceAsync_ThrowsArgumentException_WhenDestNotWinUIFile()
+    {
+        var handler = FileSystemProvider.Instance.GetRequiredService<IFileHandler>();
+        var tempPath = Path.GetTempFileName();
+        try
+        {
+            var realSource = await handler.GetFileFromPathAsync(tempPath);
+
+            var act = async () => await handler.CopyAndReplaceAsync(realSource, Substitute.For<IFile>());
+
+            await act.Should().ThrowAsync<ArgumentException>();
+        }
+        finally
+        {
+            File.Delete(tempPath);
+        }
+    }
+
+    [Test]
+    public async Task WinUIFileHandler_CopyAsync_ThrowsArgumentException_WhenDestFolderNotWinUIFolder()
+    {
+        var handler = FileSystemProvider.Instance.GetRequiredService<IFileHandler>();
+        var tempPath = Path.GetTempFileName();
+        try
+        {
+            var realSource = await handler.GetFileFromPathAsync(tempPath);
+
+            var act = async () => await handler.CopyAsync(realSource, Substitute.For<IFolder>(), "file.txt", NameCollisionOption.ReplaceExisting);
+
+            await act.Should().ThrowAsync<ArgumentException>();
+        }
+        finally
+        {
+            File.Delete(tempPath);
+        }
+    }
+
+    [Test]
+    public async Task WinUIFileHandler_MoveAndReplaceAsync_ThrowsArgumentException_WhenDestNotWinUIFile()
+    {
+        var handler = FileSystemProvider.Instance.GetRequiredService<IFileHandler>();
+        var tempPath = Path.GetTempFileName();
+        try
+        {
+            var realSource = await handler.GetFileFromPathAsync(tempPath);
+
+            var act = async () => await handler.MoveAndReplaceAsync(realSource, Substitute.For<IFile>());
+
+            await act.Should().ThrowAsync<ArgumentException>();
+        }
+        finally
+        {
+            File.Delete(tempPath);
+        }
+    }
+
+    [Test]
+    public async Task WinUIFileHandler_MoveAsync_ThrowsArgumentException_WhenDestFolderNotWinUIFolder()
+    {
+        var handler = FileSystemProvider.Instance.GetRequiredService<IFileHandler>();
+        var tempPath = Path.GetTempFileName();
+        try
+        {
+            var realSource = await handler.GetFileFromPathAsync(tempPath);
+
+            var act = async () => await handler.MoveAsync(realSource, Substitute.For<IFolder>());
+
+            await act.Should().ThrowAsync<ArgumentException>();
+        }
+        finally
+        {
+            File.Delete(tempPath);
+        }
+    }
+
+    [Test]
+    public async Task WinUIFileHandler_MoveAsync_WithName_ThrowsArgumentException_WhenFileNotWinUIFile()
+    {
+        var handler = FileSystemProvider.Instance.GetRequiredService<IFileHandler>();
+        var mockFile = Substitute.For<IFile>();
+        var mockFolder = Substitute.For<IFolder>();
+
+        var act = async () => await handler.MoveAsync(mockFile, mockFolder, "moved.txt");
+
+        await act.Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Test]
+    public async Task WinUIFileHandler_MoveAsync_WithName_ThrowsArgumentException_WhenDestFolderNotWinUIFolder()
+    {
+        var handler = FileSystemProvider.Instance.GetRequiredService<IFileHandler>();
+        var tempPath = Path.GetTempFileName();
+        try
+        {
+            var realSource = await handler.GetFileFromPathAsync(tempPath);
+
+            var act = async () => await handler.MoveAsync(realSource, Substitute.For<IFolder>(), "moved.txt");
+
+            await act.Should().ThrowAsync<ArgumentException>();
+        }
+        finally
+        {
+            File.Delete(tempPath);
+        }
+    }
+
+    [Test]
+    public async Task WinUIFileHandler_MoveAsync_WithNameAndOption_ThrowsArgumentException_WhenFileNotWinUIFile()
+    {
+        var handler = FileSystemProvider.Instance.GetRequiredService<IFileHandler>();
+        var mockFile = Substitute.For<IFile>();
+        var mockFolder = Substitute.For<IFolder>();
+
+        var act = async () => await handler.MoveAsync(mockFile, mockFolder, "moved.txt", NameCollisionOption.ReplaceExisting);
+
+        await act.Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Test]
+    public async Task WinUIFileHandler_MoveAsync_WithNameAndOption_ThrowsArgumentException_WhenDestFolderNotWinUIFolder()
+    {
+        var handler = FileSystemProvider.Instance.GetRequiredService<IFileHandler>();
+        var tempPath = Path.GetTempFileName();
+        try
+        {
+            var realSource = await handler.GetFileFromPathAsync(tempPath);
+
+            var act = async () => await handler.MoveAsync(realSource, Substitute.For<IFolder>(), "moved.txt", NameCollisionOption.ReplaceExisting);
+
+            await act.Should().ThrowAsync<ArgumentException>();
+        }
+        finally
+        {
+            File.Delete(tempPath);
+        }
+    }
+
+    [Test]
+    public async Task WinUIFolderHandler_CreateFileAsync_WithOption_ThrowsArgumentException_WhenFolderNotWinUIFolder()
+    {
+        var handler = FileSystemProvider.Instance.GetRequiredService<IFolderHandler>();
+        var mockFolder = Substitute.For<IFolder>();
+
+        var act = async () => await handler.CreateFileAsync(mockFolder, "f.txt", CreationCollisionOption.ReplaceExisting);
+
+        await act.Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Test]
+    public async Task WinUIFolderHandler_CreateFolderAsync_WithOption_ThrowsArgumentException_WhenFolderNotWinUIFolder()
+    {
+        var handler = FileSystemProvider.Instance.GetRequiredService<IFolderHandler>();
+        var mockFolder = Substitute.For<IFolder>();
+
+        var act = async () => await handler.CreateFolderAsync(mockFolder, "sub", CreationCollisionOption.ReplaceExisting);
+
+        await act.Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Test]
+    public async Task WinUIFolderHandler_DeleteAsync_WithOption_ThrowsArgumentException_WhenFolderNotWinUIFolder()
+    {
+        var handler = FileSystemProvider.Instance.GetRequiredService<IFolderHandler>();
+        var mockFolder = Substitute.For<IFolder>();
+
+        var act = async () => await handler.DeleteAsync(mockFolder, StorageDeletionOption.PermanentDelete);
+
+        await act.Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Test]
+    public async Task WinUIFolderHandler_GetFileAsync_AllFiles_ThrowsArgumentException_WhenFolderNotWinUIFolder()
+    {
+        var handler = FileSystemProvider.Instance.GetRequiredService<IFolderHandler>();
+        var mockFolder = Substitute.For<IFolder>();
+
+        var act = async () => await handler.GetFileAsync(mockFolder);
+
+        await act.Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Test]
+    public async Task WinUIFolderHandler_GetFoldersAsync_ThrowsArgumentException_WhenFolderNotWinUIFolder()
+    {
+        var handler = FileSystemProvider.Instance.GetRequiredService<IFolderHandler>();
+        var mockFolder = Substitute.For<IFolder>();
+
+        var act = async () => await handler.GetFoldersAsync(mockFolder);
+
+        await act.Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Test]
+    public async Task WinUIFolderHandler_GetItemAsync_ThrowsArgumentException_WhenFolderNotWinUIFolder()
+    {
+        var handler = FileSystemProvider.Instance.GetRequiredService<IFolderHandler>();
+        var mockFolder = Substitute.For<IFolder>();
+
+        var act = async () => await handler.GetItemAsync(mockFolder, "item");
+
+        await act.Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Test]
+    public async Task WinUIFolderHandler_GetItemsAsync_ThrowsArgumentException_WhenFolderNotWinUIFolder()
+    {
+        var handler = FileSystemProvider.Instance.GetRequiredService<IFolderHandler>();
+        var mockFolder = Substitute.For<IFolder>();
+
+        var act = async () => await handler.GetItemsAsync(mockFolder);
+
+        await act.Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Test]
+    public async Task WinUIFolderHandler_GetParentAsync_ThrowsArgumentException_WhenFolderNotWinUIFolder()
+    {
+        var handler = FileSystemProvider.Instance.GetRequiredService<IFolderHandler>();
+        var mockFolder = Substitute.For<IFolder>();
+
+        var act = async () => await handler.GetParentAsync(mockFolder);
+
+        await act.Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Test]
+    public async Task WinUIFolderHandler_RenameAsync_WithOption_ThrowsArgumentException_WhenFolderNotWinUIFolder()
+    {
+        var handler = FileSystemProvider.Instance.GetRequiredService<IFolderHandler>();
+        var mockFolder = Substitute.For<IFolder>();
+
+        var act = async () => await handler.RenameAsync(mockFolder, "renamed", NameCollisionOption.GenerateUniqueName);
+
+        await act.Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Test]
+    public async Task WinUIFolderHandler_TryGetItemAsync_ThrowsArgumentException_WhenFolderNotWinUIFolder()
+    {
+        var handler = FileSystemProvider.Instance.GetRequiredService<IFolderHandler>();
+        var mockFolder = Substitute.For<IFolder>();
+
+        var act = async () => await handler.TryGetItemAsync(mockFolder, "item");
+
+        await act.Should().ThrowAsync<ArgumentException>();
+    }
+
     #endregion
 
     #region Constants
