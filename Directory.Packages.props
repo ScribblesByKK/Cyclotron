@@ -18,7 +18,7 @@
     <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
 
     <!-- Test packages -->
-    <PackageVersion Include="TUnit" Version="1.15.0" />
+    <PackageVersion Include="TUnit" Version="1.18.0" />
     <PackageVersion Include="NSubstitute" Version="5.3.0" />
     <PackageVersion Include="AwesomeAssertions" Version="9.4.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
