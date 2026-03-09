@@ -1,4 +1,5 @@
-﻿using Microsoft.UI;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.UI;
 using Windows.Win32;
 
 namespace Cyclotron.FileSystemAdapter.WinUI.Pickers;
@@ -10,6 +11,7 @@ namespace Cyclotron.FileSystemAdapter.WinUI.Pickers;
 /// This internal utility provides helper methods to get the active or foreground window ID,
 /// which is required when creating WinUI file/folder picker dialogs that need to be parented to a specific window.
 /// </remarks>
+[ExcludeFromCodeCoverage(Justification = "Depends on an active Win32 window; cannot be exercised in a headless test runner.")]
 internal static class WindowUtil
 {
     /// <summary>

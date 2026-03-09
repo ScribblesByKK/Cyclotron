@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Cyclotron.FileSystemAdapter.WinUI.Pickers;
 
 /// <summary>
@@ -6,6 +8,7 @@ namespace Cyclotron.FileSystemAdapter.WinUI.Pickers;
 /// <remarks>
 /// This class provides a file save picker dialog for WinUI applications.
 /// </remarks>
+[ExcludeFromCodeCoverage(Justification = "Opens an interactive OS shell dialog; cannot be automated in tests.")]
 internal class WinUIFileSavePicker : IFileSavePicker
 {
     /// <inheritdoc/>
