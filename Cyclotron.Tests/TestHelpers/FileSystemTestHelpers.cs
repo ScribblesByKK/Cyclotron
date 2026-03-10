@@ -1,5 +1,3 @@
-using AwesomeAssertions;
-
 namespace Cyclotron.Tests.TestHelpers;
 
 /// <summary>
@@ -26,9 +24,9 @@ public static class FileSystemTestHelpers
     /// <summary>
     /// Asserts that a file exists at the specified path.
     /// </summary>
-    public static void AssertFileExists(string path)
+    public static async Task AssertFileExists(string path)
     {
-        File.Exists(path).Should().BeTrue($"file should exist at {path}");
+        await Assert.That(File.Exists(path)).IsTrue().Because($"file should exist at {path}");
     }
 
     /// <summary>
@@ -37,7 +35,7 @@ public static class FileSystemTestHelpers
     public static async Task AssertFileContentAsync(string path, string expectedContent)
     {
         var actualContent = await File.ReadAllTextAsync(path);
-        actualContent.Should().Be(expectedContent);
+        await Assert.That(actualContent).IsEqualTo(expectedContent);
     }
 
     /// <summary>

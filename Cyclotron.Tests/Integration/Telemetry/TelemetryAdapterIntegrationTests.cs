@@ -2,7 +2,6 @@ using Cyclotron.Telemetry.Configuration;
 using Cyclotron.Telemetry.Logging;
 using Cyclotron.Tests.Integration.Fixtures;
 using Cyclotron.Tests.TestHelpers;
-using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Cyclotron.Extensions.DependencyInjection;
@@ -51,27 +50,27 @@ public class TelemetryAdapterIntegrationTests
     #region Service Registration
 
     [Test]
-    public void AddCyclotronTelemetry_RegistersICyclotronLogger()
+    public async Task AddCyclotronTelemetry_RegistersICyclotronLogger()
     {
         var logger = _serviceProvider.GetService<ICyclotronLogger>();
 
-        logger.Should().NotBeNull();
+        await Assert.That(logger).IsNotNull();
     }
 
     [Test]
-    public void AddCyclotronTelemetry_RegistersSerilogLogger()
+    public async Task AddCyclotronTelemetry_RegistersSerilogLogger()
     {
         var serilogLogger = _serviceProvider.GetService<Serilog.ILogger>();
 
-        serilogLogger.Should().NotBeNull();
+        await Assert.That(serilogLogger).IsNotNull();
     }
 
     [Test]
-    public void AddCyclotronTelemetry_RegistersILoggerFactory()
+    public async Task AddCyclotronTelemetry_RegistersILoggerFactory()
     {
         var factory = _serviceProvider.GetService<ILoggerFactory>();
 
-        factory.Should().NotBeNull();
+        await Assert.That(factory).IsNotNull();
     }
 
     #endregion
@@ -79,22 +78,22 @@ public class TelemetryAdapterIntegrationTests
     #region Logger Configuration
 
     [Test]
-    public void CyclotronLogger_HasCorrectModuleName()
+    public async Task CyclotronLogger_HasCorrectModuleName()
     {
         var logger = _serviceProvider.GetRequiredService<ICyclotronLogger>();
 
-        logger.ModuleName.Should().Be("test-module");
+        await Assert.That(logger.ModuleName).IsEqualTo("test-module");
     }
 
     [Test]
-    public void CyclotronLogger_ForModule_CreatesNewLogger()
+    public async Task CyclotronLogger_ForModule_CreatesNewLogger()
     {
         var logger = _serviceProvider.GetRequiredService<ICyclotronLogger>();
 
         var moduleLogger = logger.ForModule("CustomModule");
 
-        moduleLogger.ModuleName.Should().Be("CustomModule");
-        moduleLogger.Should().NotBeSameAs(logger);
+        await Assert.That(moduleLogger.ModuleName).IsEqualTo("CustomModule");
+        await Assert.That(moduleLogger).IsNotSameReferenceAs(logger);
     }
 
     #endregion
@@ -102,20 +101,22 @@ public class TelemetryAdapterIntegrationTests
     #region End-to-End Logging
 
     [Test]
-    public void LogInformation_WritesToTestSink()
+    public async Task LogInformation_WritesToTestSink()
     {
         var loggerFactory = _serviceProvider.GetRequiredService<ILoggerFactory>();
         var msLogger = loggerFactory.CreateLogger("TestCategory");
 
         msLogger.LogInformation("Integration test message");
 
-        _testSink.LoggedEntries.Should().Contain(e =>
-            e.Level == LogLevel.Information &&
-            e.Message.Contains("Integration test message"));
+        await Assert.That(
+            _testSink.LoggedEntries.Any(e =>
+                e.Level == LogLevel.Information &&
+                e.Message.Contains("Integration test message")))
+            .IsTrue();
     }
 
     [Test]
-    public void LogError_WithException_CapturesExceptionDetails()
+    public async Task LogError_WithException_CapturesExceptionDetails()
     {
         var loggerFactory = _serviceProvider.GetRequiredService<ILoggerFactory>();
         var msLogger = loggerFactory.CreateLogger("TestCategory");
@@ -123,22 +124,26 @@ public class TelemetryAdapterIntegrationTests
 
         msLogger.LogError(exception, "Error occurred");
 
-        _testSink.LoggedEntries.Should().Contain(e =>
-            e.Level == LogLevel.Error &&
-            e.Exception is InvalidOperationException);
+        await Assert.That(
+            _testSink.LoggedEntries.Any(e =>
+                e.Level == LogLevel.Error &&
+                e.Exception is InvalidOperationException))
+            .IsTrue();
     }
 
     [Test]
-    public void LogWarning_WritesToTestSink()
+    public async Task LogWarning_WritesToTestSink()
     {
         var loggerFactory = _serviceProvider.GetRequiredService<ILoggerFactory>();
         var msLogger = loggerFactory.CreateLogger("TestCategory");
 
         msLogger.LogWarning("Warning message");
 
-        _testSink.LoggedEntries.Should().Contain(e =>
-            e.Level == LogLevel.Warning &&
-            e.Message.Contains("Warning message"));
+        await Assert.That(
+            _testSink.LoggedEntries.Any(e =>
+                e.Level == LogLevel.Warning &&
+                e.Message.Contains("Warning message")))
+            .IsTrue();
     }
 
     #endregion
@@ -146,7 +151,7 @@ public class TelemetryAdapterIntegrationTests
     #region Default Configuration
 
     [Test]
-    public void AddCyclotronTelemetry_WithDefaults_Succeeds()
+    public async Task AddCyclotronTelemetry_WithDefaults_Succeeds()
     {
         var services = new ServiceCollection();
 
@@ -154,8 +159,8 @@ public class TelemetryAdapterIntegrationTests
 
         using var sp = services.BuildServiceProvider();
         var logger = sp.GetService<ICyclotronLogger>();
-        logger.Should().NotBeNull();
-        logger!.ModuleName.Should().Be("core");
+        await Assert.That(logger).IsNotNull();
+        await Assert.That(logger!.ModuleName).IsEqualTo("core");
     }
 
     #endregion
@@ -163,7 +168,7 @@ public class TelemetryAdapterIntegrationTests
     #region TelemetryTestSink Tests
 
     [Test]
-    public void TestSink_Clear_RemovesAllEntries()
+    public async Task TestSink_Clear_RemovesAllEntries()
     {
         var loggerFactory = _serviceProvider.GetRequiredService<ILoggerFactory>();
         var msLogger = loggerFactory.CreateLogger("TestCategory");
@@ -172,11 +177,11 @@ public class TelemetryAdapterIntegrationTests
 
         _testSink.Clear();
 
-        _testSink.LoggedEntries.Should().BeEmpty();
+        await Assert.That(_testSink.LoggedEntries).IsEmpty();
     }
 
     [Test]
-    public void TestSink_GetLogs_ByLevel_FiltersCorrectly()
+    public async Task TestSink_GetLogs_ByLevel_FiltersCorrectly()
     {
         var loggerFactory = _serviceProvider.GetRequiredService<ILoggerFactory>();
         var msLogger = loggerFactory.CreateLogger("TestCategory");
@@ -186,12 +191,12 @@ public class TelemetryAdapterIntegrationTests
 
         var warnings = _testSink.GetLogs(LogLevel.Warning).ToList();
 
-        warnings.Should().ContainSingle();
-        warnings[0].Message.Should().Contain("Warning message");
+        await Assert.That(warnings).Count().IsEqualTo(1);
+        await Assert.That(warnings[0].Message).Contains("Warning message");
     }
 
     [Test]
-    public void TestSink_GetLogs_ByCategoryContains_FiltersCorrectly()
+    public async Task TestSink_GetLogs_ByCategoryContains_FiltersCorrectly()
     {
         var loggerFactory = _serviceProvider.GetRequiredService<ILoggerFactory>();
         var msLogger = loggerFactory.CreateLogger("TestCategory");
@@ -199,7 +204,7 @@ public class TelemetryAdapterIntegrationTests
 
         var logs = _testSink.GetLogs("TestCategory").ToList();
 
-        logs.Should().NotBeEmpty();
+        await Assert.That(logs).IsNotEmpty();
     }
 
     #endregion
@@ -222,8 +227,8 @@ public class TelemetryAdapterIntegrationTests
 
         var act = async () => await Task.WhenAll(tasks);
 
-        await act.Should().NotThrowAsync();
-        _testSink.LoggedEntries.Should().HaveCountGreaterThanOrEqualTo(50);
+        await Assert.That(act).ThrowsNothing();
+        await Assert.That(_testSink.LoggedEntries.Count).IsGreaterThanOrEqualTo(50);
     }
 
     #endregion
@@ -231,23 +236,23 @@ public class TelemetryAdapterIntegrationTests
     #region TelemetryAssertions Helper Tests
 
     [Test]
-    public void ShouldHaveLogged_FindsMatchingEntry()
+    public async Task ShouldHaveLogged_FindsMatchingEntry()
     {
         var loggerFactory = _serviceProvider.GetRequiredService<ILoggerFactory>();
         var msLogger = loggerFactory.CreateLogger("TestCategory");
         msLogger.LogInformation("Expected message");
 
-        _testSink.ShouldHaveLogged(LogLevel.Information, "Expected message");
+        await _testSink.ShouldHaveLogged(LogLevel.Information, "Expected message");
     }
 
     [Test]
-    public void ShouldHaveLoggedException_FindsMatchingException()
+    public async Task ShouldHaveLoggedException_FindsMatchingException()
     {
         var loggerFactory = _serviceProvider.GetRequiredService<ILoggerFactory>();
         var msLogger = loggerFactory.CreateLogger("TestCategory");
         msLogger.LogError(new ArgumentException("test"), "Error");
 
-        _testSink.ShouldHaveLoggedException<ArgumentException>();
+        await _testSink.ShouldHaveLoggedException<ArgumentException>();
     }
 
     #endregion

@@ -2,9 +2,7 @@ using Cyclotron.FileSystemAdapter;
 using Cyclotron.FileSystemAdapter.Abstractions.Handlers;
 using Cyclotron.FileSystemAdapter.Abstractions.Models;
 using Cyclotron.Extensions.DepepndencyInjection;
-using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using NSubstitute;
 
 namespace Cyclotron.Tests.Unit.FileSystemAdapter;
 
@@ -12,18 +10,18 @@ namespace Cyclotron.Tests.Unit.FileSystemAdapter;
 [Category("FileSystemAdapter")]
 public class FileSystemAdapterTests
 {
-    private IFileHandler _fileHandler = null!;
-    private IFolderHandler _folderHandler = null!;
-    private IFile _mockFile = null!;
-    private IFolder _mockFolder = null!;
+    private Mock<IFileHandler> _fileHandler = null!;
+    private Mock<IFolderHandler> _folderHandler = null!;
+    private Mock<IFile> _mockFile = null!;
+    private Mock<IFolder> _mockFolder = null!;
 
     [Before(Test)]
     public void Setup()
     {
-        _fileHandler = Substitute.For<IFileHandler>();
-        _folderHandler = Substitute.For<IFolderHandler>();
-        _mockFile = Substitute.For<IFile>();
-        _mockFolder = Substitute.For<IFolder>();
+        _fileHandler = Mock.Of<IFileHandler>();
+        _folderHandler = Mock.Of<IFolderHandler>();
+        _mockFile = Mock.Of<IFile>();
+        _mockFolder = Mock.Of<IFolder>();
     }
 
     #region IFileHandler - Copy Operations
@@ -31,11 +29,11 @@ public class FileSystemAdapterTests
     [Test]
     public async Task CopyAndReplaceAsync_CallsHandler_WithCorrectParameters()
     {
-        var destinationFile = Substitute.For<IFile>();
+        var destinationFile = Mock.Of<IFile>();
 
-        await _fileHandler.CopyAndReplaceAsync(_mockFile, destinationFile);
+        await _fileHandler.Object.CopyAndReplaceAsync(_mockFile.Object, destinationFile.Object);
 
-        await _fileHandler.Received(1).CopyAndReplaceAsync(_mockFile, destinationFile);
+        _fileHandler.CopyAndReplaceAsync(Any<IFile>(), Any<IFile>()).WasCalled(Times.Once);
     }
 
     [Test]
@@ -44,9 +42,9 @@ public class FileSystemAdapterTests
         const string desiredName = "newfile.txt";
         const NameCollisionOption option = NameCollisionOption.ReplaceExisting;
 
-        await _fileHandler.CopyAsync(_mockFile, _mockFolder, desiredName, option);
+        await _fileHandler.Object.CopyAsync(_mockFile.Object, _mockFolder.Object, desiredName, option);
 
-        await _fileHandler.Received(1).CopyAsync(_mockFile, _mockFolder, desiredName, option);
+        _fileHandler.CopyAsync(Any<IFile>(), Any<IFolder>(), desiredName, option).WasCalled(Times.Once);
     }
 
     [Test]
@@ -54,10 +52,9 @@ public class FileSystemAdapterTests
     {
         const string desiredName = "test.txt";
 
-        await _fileHandler.CopyAsync(_mockFile, _mockFolder, desiredName, NameCollisionOption.FailIfExists);
+        await _fileHandler.Object.CopyAsync(_mockFile.Object, _mockFolder.Object, desiredName, NameCollisionOption.FailIfExists);
 
-        await _fileHandler.Received(1).CopyAsync(
-            _mockFile, _mockFolder, desiredName, NameCollisionOption.FailIfExists);
+        _fileHandler.CopyAsync(Any<IFile>(), Any<IFolder>(), desiredName, NameCollisionOption.FailIfExists).WasCalled(Times.Once);
     }
 
     [Test]
@@ -65,10 +62,9 @@ public class FileSystemAdapterTests
     {
         const string desiredName = "test.txt";
 
-        await _fileHandler.CopyAsync(_mockFile, _mockFolder, desiredName, NameCollisionOption.GenerateUniqueName);
+        await _fileHandler.Object.CopyAsync(_mockFile.Object, _mockFolder.Object, desiredName, NameCollisionOption.GenerateUniqueName);
 
-        await _fileHandler.Received(1).CopyAsync(
-            _mockFile, _mockFolder, desiredName, NameCollisionOption.GenerateUniqueName);
+        _fileHandler.CopyAsync(Any<IFile>(), Any<IFolder>(), desiredName, NameCollisionOption.GenerateUniqueName).WasCalled(Times.Once);
     }
 
     #endregion
@@ -78,19 +74,19 @@ public class FileSystemAdapterTests
     [Test]
     public async Task MoveAndReplaceAsync_CallsHandler_WithCorrectParameters()
     {
-        var fileToReplace = Substitute.For<IFile>();
+        var fileToReplace = Mock.Of<IFile>();
 
-        await _fileHandler.MoveAndReplaceAsync(_mockFile, fileToReplace);
+        await _fileHandler.Object.MoveAndReplaceAsync(_mockFile.Object, fileToReplace.Object);
 
-        await _fileHandler.Received(1).MoveAndReplaceAsync(_mockFile, fileToReplace);
+        _fileHandler.MoveAndReplaceAsync(Any<IFile>(), Any<IFile>()).WasCalled(Times.Once);
     }
 
     [Test]
     public async Task MoveAsync_ToFolder_CallsHandlerCorrectly()
     {
-        await _fileHandler.MoveAsync(_mockFile, _mockFolder);
+        await _fileHandler.Object.MoveAsync(_mockFile.Object, _mockFolder.Object);
 
-        await _fileHandler.Received(1).MoveAsync(_mockFile, _mockFolder);
+        _fileHandler.MoveAsync(Any<IFile>(), Any<IFolder>()).WasCalled(Times.Once);
     }
 
     [Test]
@@ -98,9 +94,9 @@ public class FileSystemAdapterTests
     {
         const string desiredName = "moved.txt";
 
-        await _fileHandler.MoveAsync(_mockFile, _mockFolder, desiredName);
+        await _fileHandler.Object.MoveAsync(_mockFile.Object, _mockFolder.Object, desiredName);
 
-        await _fileHandler.Received(1).MoveAsync(_mockFile, _mockFolder, desiredName);
+        _fileHandler.MoveAsync(Any<IFile>(), Any<IFolder>(), desiredName).WasCalled(Times.Once);
     }
 
     [Test]
@@ -109,9 +105,9 @@ public class FileSystemAdapterTests
         const string desiredName = "moved.txt";
         const NameCollisionOption option = NameCollisionOption.ReplaceExisting;
 
-        await _fileHandler.MoveAsync(_mockFile, _mockFolder, desiredName, option);
+        await _fileHandler.Object.MoveAsync(_mockFile.Object, _mockFolder.Object, desiredName, option);
 
-        await _fileHandler.Received(1).MoveAsync(_mockFile, _mockFolder, desiredName, option);
+        _fileHandler.MoveAsync(Any<IFile>(), Any<IFolder>(), desiredName, option).WasCalled(Times.Once);
     }
 
     #endregion
@@ -121,34 +117,33 @@ public class FileSystemAdapterTests
     [Test]
     public async Task OpenAsync_WithReadMode_CallsHandlerCorrectly()
     {
-        await _fileHandler.OpenAsync(_mockFile, FileAccessMode.Read);
+        await _fileHandler.Object.OpenAsync(_mockFile.Object, FileAccessMode.Read);
 
-        await _fileHandler.Received(1).OpenAsync(_mockFile, FileAccessMode.Read);
+        _fileHandler.OpenAsync(Any<IFile>(), FileAccessMode.Read).WasCalled(Times.Once);
     }
 
     [Test]
     public async Task OpenAsync_WithReadWriteMode_CallsHandlerCorrectly()
     {
-        await _fileHandler.OpenAsync(_mockFile, FileAccessMode.ReadWrite);
+        await _fileHandler.Object.OpenAsync(_mockFile.Object, FileAccessMode.ReadWrite);
 
-        await _fileHandler.Received(1).OpenAsync(_mockFile, FileAccessMode.ReadWrite);
+        _fileHandler.OpenAsync(Any<IFile>(), FileAccessMode.ReadWrite).WasCalled(Times.Once);
     }
 
     [Test]
     public async Task OpenAsync_WithStorageOptions_CallsHandlerCorrectly()
     {
-        await _fileHandler.OpenAsync(_mockFile, FileAccessMode.Read, StorageOpenOptions.AllowOnlyReaders);
+        await _fileHandler.Object.OpenAsync(_mockFile.Object, FileAccessMode.Read, StorageOpenOptions.AllowOnlyReaders);
 
-        await _fileHandler.Received(1).OpenAsync(_mockFile, FileAccessMode.Read, StorageOpenOptions.AllowOnlyReaders);
+        _fileHandler.OpenAsync(Any<IFile>(), FileAccessMode.Read, StorageOpenOptions.AllowOnlyReaders).WasCalled(Times.Once);
     }
 
     [Test]
     public async Task OpenAsync_WithAllowReadersAndWriters_CallsHandlerCorrectly()
     {
-        await _fileHandler.OpenAsync(_mockFile, FileAccessMode.ReadWrite, StorageOpenOptions.AllowReadersAndWriters);
+        await _fileHandler.Object.OpenAsync(_mockFile.Object, FileAccessMode.ReadWrite, StorageOpenOptions.AllowReadersAndWriters);
 
-        await _fileHandler.Received(1).OpenAsync(
-            _mockFile, FileAccessMode.ReadWrite, StorageOpenOptions.AllowReadersAndWriters);
+        _fileHandler.OpenAsync(Any<IFile>(), FileAccessMode.ReadWrite, StorageOpenOptions.AllowReadersAndWriters).WasCalled(Times.Once);
     }
 
     #endregion
@@ -160,9 +155,9 @@ public class FileSystemAdapterTests
     {
         const string desiredName = "renamed.txt";
 
-        await _fileHandler.RenameAsync(_mockFile, desiredName);
+        await _fileHandler.Object.RenameAsync(_mockFile.Object, desiredName);
 
-        await _fileHandler.Received(1).RenameAsync(_mockFile, desiredName);
+        _fileHandler.RenameAsync(Any<IFile>(), desiredName).WasCalled(Times.Once);
     }
 
     [Test]
@@ -170,9 +165,9 @@ public class FileSystemAdapterTests
     {
         const string desiredName = "renamed.txt";
 
-        await _fileHandler.RenameAsync(_mockFile, desiredName, NameCollisionOption.FailIfExists);
+        await _fileHandler.Object.RenameAsync(_mockFile.Object, desiredName, NameCollisionOption.FailIfExists);
 
-        await _fileHandler.Received(1).RenameAsync(_mockFile, desiredName, NameCollisionOption.FailIfExists);
+        _fileHandler.RenameAsync(Any<IFile>(), desiredName, NameCollisionOption.FailIfExists).WasCalled(Times.Once);
     }
 
     #endregion
@@ -183,21 +178,21 @@ public class FileSystemAdapterTests
     public async Task GetFileFromPathAsync_ReturnsFile_WhenPathIsValid()
     {
         const string path = "/test/file.txt";
-        _fileHandler.GetFileFromPathAsync(path).Returns(_mockFile);
+        _fileHandler.GetFileFromPathAsync(path).Returns(_mockFile.Object);
 
-        var result = await _fileHandler.GetFileFromPathAsync(path);
+        var result = await _fileHandler.Object.GetFileFromPathAsync(path);
 
-        result.Should().BeSameAs(_mockFile);
+        await Assert.That(result).IsSameReferenceAs(_mockFile.Object);
     }
 
     [Test]
     public async Task GetParentAsync_ReturnsFolder_ForFile()
     {
-        _fileHandler.GetParentAsync(_mockFile).Returns(_mockFolder);
+        _fileHandler.GetParentAsync(Any<IFile>()).Returns(_mockFolder.Object);
 
-        var result = await _fileHandler.GetParentAsync(_mockFile);
+        var result = await _fileHandler.Object.GetParentAsync(_mockFile.Object);
 
-        result.Should().BeSameAs(_mockFolder);
+        await Assert.That(result).IsSameReferenceAs(_mockFolder.Object);
     }
 
     #endregion
@@ -207,37 +202,37 @@ public class FileSystemAdapterTests
     [Test]
     public async Task GetFileFromPathAsync_PropagatesException_WhenHandlerThrows()
     {
-        _fileHandler.GetFileFromPathAsync(Arg.Any<string>())
-            .Returns<IFile>(x => throw new FileNotFoundException("File not found"));
+        _fileHandler.GetFileFromPathAsync(Any<string>())
+            .Throws(new FileNotFoundException("File not found"));
 
-        var act = async () => await _fileHandler.GetFileFromPathAsync("nonexistent.txt");
+        var act = async () => await _fileHandler.Object.GetFileFromPathAsync("nonexistent.txt");
 
-        await act.Should().ThrowAsync<FileNotFoundException>()
+        await Assert.That(act).ThrowsExactly<FileNotFoundException>()
             .WithMessage("File not found");
     }
 
     [Test]
     public async Task CopyAsync_PropagatesException_WhenHandlerThrows()
     {
-        _fileHandler.CopyAsync(Arg.Any<IFile>(), Arg.Any<IFolder>(), Arg.Any<string>(), Arg.Any<NameCollisionOption>())
-            .Returns(x => throw new UnauthorizedAccessException("Access denied"));
+        _fileHandler.CopyAsync(Any<IFile>(), Any<IFolder>(), Any<string>(), Any<NameCollisionOption>())
+            .Throws(new UnauthorizedAccessException("Access denied"));
 
-        var act = async () => await _fileHandler.CopyAsync(
-            _mockFile, _mockFolder, "test.txt", NameCollisionOption.FailIfExists);
+        var act = async () => await _fileHandler.Object.CopyAsync(
+            _mockFile.Object, _mockFolder.Object, "test.txt", NameCollisionOption.FailIfExists);
 
-        await act.Should().ThrowAsync<UnauthorizedAccessException>()
+        await Assert.That(act).ThrowsExactly<UnauthorizedAccessException>()
             .WithMessage("Access denied");
     }
 
     [Test]
     public async Task MoveAsync_PropagatesIOException_WhenHandlerThrows()
     {
-        _fileHandler.MoveAsync(Arg.Any<IFile>(), Arg.Any<IFolder>())
-            .Returns(x => throw new IOException("Disk full"));
+        _fileHandler.MoveAsync(Any<IFile>(), Any<IFolder>())
+            .Throws(new IOException("Disk full"));
 
-        var act = async () => await _fileHandler.MoveAsync(_mockFile, _mockFolder);
+        var act = async () => await _fileHandler.Object.MoveAsync(_mockFile.Object, _mockFolder.Object);
 
-        await act.Should().ThrowAsync<IOException>()
+        await Assert.That(act).ThrowsExactly<IOException>()
             .WithMessage("Disk full");
     }
 
@@ -250,9 +245,9 @@ public class FileSystemAdapterTests
     {
         const string desiredName = "newfile.txt";
 
-        await _folderHandler.CreateFileAsync(_mockFolder, desiredName);
+        await _folderHandler.Object.CreateFileAsync(_mockFolder.Object, desiredName);
 
-        await _folderHandler.Received(1).CreateFileAsync(_mockFolder, desiredName);
+        _folderHandler.CreateFileAsync(Any<IFolder>(), desiredName).WasCalled(Times.Once);
     }
 
     [Test]
@@ -260,10 +255,9 @@ public class FileSystemAdapterTests
     {
         const string desiredName = "newfile.txt";
 
-        await _folderHandler.CreateFileAsync(_mockFolder, desiredName, CreationCollisionOption.ReplaceExisting);
+        await _folderHandler.Object.CreateFileAsync(_mockFolder.Object, desiredName, CreationCollisionOption.ReplaceExisting);
 
-        await _folderHandler.Received(1).CreateFileAsync(
-            _mockFolder, desiredName, CreationCollisionOption.ReplaceExisting);
+        _folderHandler.CreateFileAsync(Any<IFolder>(), desiredName, CreationCollisionOption.ReplaceExisting).WasCalled(Times.Once);
     }
 
     [Test]
@@ -271,10 +265,9 @@ public class FileSystemAdapterTests
     {
         const string desiredName = "existing.txt";
 
-        await _folderHandler.CreateFileAsync(_mockFolder, desiredName, CreationCollisionOption.OpenIfExists);
+        await _folderHandler.Object.CreateFileAsync(_mockFolder.Object, desiredName, CreationCollisionOption.OpenIfExists);
 
-        await _folderHandler.Received(1).CreateFileAsync(
-            _mockFolder, desiredName, CreationCollisionOption.OpenIfExists);
+        _folderHandler.CreateFileAsync(Any<IFolder>(), desiredName, CreationCollisionOption.OpenIfExists).WasCalled(Times.Once);
     }
 
     [Test]
@@ -282,9 +275,9 @@ public class FileSystemAdapterTests
     {
         const string desiredName = "subfolder";
 
-        await _folderHandler.CreateFolderAsync(_mockFolder, desiredName);
+        await _folderHandler.Object.CreateFolderAsync(_mockFolder.Object, desiredName);
 
-        await _folderHandler.Received(1).CreateFolderAsync(_mockFolder, desiredName);
+        _folderHandler.CreateFolderAsync(Any<IFolder>(), desiredName).WasCalled(Times.Once);
     }
 
     [Test]
@@ -292,10 +285,9 @@ public class FileSystemAdapterTests
     {
         const string desiredName = "subfolder";
 
-        await _folderHandler.CreateFolderAsync(_mockFolder, desiredName, CreationCollisionOption.FailIfExists);
+        await _folderHandler.Object.CreateFolderAsync(_mockFolder.Object, desiredName, CreationCollisionOption.FailIfExists);
 
-        await _folderHandler.Received(1).CreateFolderAsync(
-            _mockFolder, desiredName, CreationCollisionOption.FailIfExists);
+        _folderHandler.CreateFolderAsync(Any<IFolder>(), desiredName, CreationCollisionOption.FailIfExists).WasCalled(Times.Once);
     }
 
     #endregion
@@ -305,25 +297,25 @@ public class FileSystemAdapterTests
     [Test]
     public async Task DeleteAsync_Folder_CallsHandlerCorrectly()
     {
-        await _folderHandler.DeleteAsync(_mockFolder);
+        await _folderHandler.Object.DeleteAsync(_mockFolder.Object);
 
-        await _folderHandler.Received(1).DeleteAsync(_mockFolder);
+        _folderHandler.DeleteAsync(Any<IFolder>()).WasCalled(Times.Once);
     }
 
     [Test]
     public async Task DeleteAsync_WithPermanentDelete_CallsHandlerCorrectly()
     {
-        await _folderHandler.DeleteAsync(_mockFolder, StorageDeletionOption.PermanentDelete);
+        await _folderHandler.Object.DeleteAsync(_mockFolder.Object, StorageDeletionOption.PermanentDelete);
 
-        await _folderHandler.Received(1).DeleteAsync(_mockFolder, StorageDeletionOption.PermanentDelete);
+        _folderHandler.DeleteAsync(Any<IFolder>(), StorageDeletionOption.PermanentDelete).WasCalled(Times.Once);
     }
 
     [Test]
     public async Task DeleteAsync_WithDefaultOption_CallsHandlerCorrectly()
     {
-        await _folderHandler.DeleteAsync(_mockFolder, StorageDeletionOption.Default);
+        await _folderHandler.Object.DeleteAsync(_mockFolder.Object, StorageDeletionOption.Default);
 
-        await _folderHandler.Received(1).DeleteAsync(_mockFolder, StorageDeletionOption.Default);
+        _folderHandler.DeleteAsync(Any<IFolder>(), StorageDeletionOption.Default).WasCalled(Times.Once);
     }
 
     #endregion
@@ -334,91 +326,93 @@ public class FileSystemAdapterTests
     public async Task GetFileAsync_ByName_ReturnsFile()
     {
         const string fileName = "test.txt";
-        _folderHandler.GetFileAsync(_mockFolder, fileName).Returns(_mockFile);
+        _folderHandler.GetFileAsync(Any<IFolder>(), fileName).Returns(_mockFile.Object);
 
-        var result = await _folderHandler.GetFileAsync(_mockFolder, fileName);
+        var result = await _folderHandler.Object.GetFileAsync(_mockFolder.Object, fileName);
 
-        result.Should().BeSameAs(_mockFile);
+        await Assert.That(result).IsSameReferenceAs(_mockFile.Object);
     }
 
     [Test]
     public async Task GetFileAsync_AllFiles_ReturnsFileList()
     {
-        var files = new List<IFile> { _mockFile, Substitute.For<IFile>() };
-        _folderHandler.GetFileAsync(_mockFolder).Returns(files);
+        var secondFile = Mock.Of<IFile>();
+        var files = new List<IFile> { _mockFile.Object, secondFile.Object };
+        _folderHandler.GetFileAsync(Any<IFolder>()).Returns(files);
 
-        var result = await _folderHandler.GetFileAsync(_mockFolder);
+        var result = await _folderHandler.Object.GetFileAsync(_mockFolder.Object);
 
-        result.Should().HaveCount(2);
-        result.Should().Contain(_mockFile);
+        await Assert.That(result).Count().IsEqualTo(2);
+        await Assert.That(result).Contains(_mockFile.Object);
     }
 
     [Test]
     public async Task GetFolderAsync_ByName_ReturnsFolder()
     {
         const string folderName = "subfolder";
-        var subFolder = Substitute.For<IFolder>();
-        _folderHandler.GetFolderAsync(_mockFolder, folderName).Returns(subFolder);
+        var subFolder = Mock.Of<IFolder>();
+        _folderHandler.GetFolderAsync(Any<IFolder>(), folderName).Returns(subFolder.Object);
 
-        var result = await _folderHandler.GetFolderAsync(_mockFolder, folderName);
+        var result = await _folderHandler.Object.GetFolderAsync(_mockFolder.Object, folderName);
 
-        result.Should().BeSameAs(subFolder);
+        await Assert.That(result).IsSameReferenceAs(subFolder.Object);
     }
 
     [Test]
     public async Task GetFolderFromPathAsync_ReturnsFolder()
     {
         const string path = "/test/folder";
-        _folderHandler.GetFolderFromPathAsync(path).Returns(_mockFolder);
+        _folderHandler.GetFolderFromPathAsync(path).Returns(_mockFolder.Object);
 
-        var result = await _folderHandler.GetFolderFromPathAsync(path);
+        var result = await _folderHandler.Object.GetFolderFromPathAsync(path);
 
-        result.Should().BeSameAs(_mockFolder);
+        await Assert.That(result).IsSameReferenceAs(_mockFolder.Object);
     }
 
     [Test]
     public async Task GetFoldersAsync_ReturnsFolderList()
     {
-        var folders = new List<IFolder> { _mockFolder, Substitute.For<IFolder>() };
-        _folderHandler.GetFoldersAsync(_mockFolder).Returns(folders);
+        var secondFolder = Mock.Of<IFolder>();
+        var folders = new List<IFolder> { _mockFolder.Object, secondFolder.Object };
+        _folderHandler.GetFoldersAsync(Any<IFolder>()).Returns(folders);
 
-        var result = await _folderHandler.GetFoldersAsync(_mockFolder);
+        var result = await _folderHandler.Object.GetFoldersAsync(_mockFolder.Object);
 
-        result.Should().HaveCount(2);
+        await Assert.That(result).Count().IsEqualTo(2);
     }
 
     [Test]
     public async Task GetItemAsync_ByName_ReturnsStorageItem()
     {
         const string itemName = "item";
-        var storageItem = Substitute.For<IStorageItem>();
-        _folderHandler.GetItemAsync(_mockFolder, itemName).Returns(storageItem);
+        var storageItem = Mock.Of<IStorageItem>();
+        _folderHandler.GetItemAsync(Any<IFolder>(), itemName).Returns(storageItem.Object);
 
-        var result = await _folderHandler.GetItemAsync(_mockFolder, itemName);
+        var result = await _folderHandler.Object.GetItemAsync(_mockFolder.Object, itemName);
 
-        result.Should().BeSameAs(storageItem);
+        await Assert.That(result).IsSameReferenceAs(storageItem.Object);
     }
 
     [Test]
     public async Task GetItemsAsync_ReturnsStorageItemList()
     {
-        var items = new List<IStorageItem> { _mockFile, _mockFolder };
-        _folderHandler.GetItemsAsync(_mockFolder).Returns(items);
+        var items = new List<IStorageItem> { _mockFile.Object, _mockFolder.Object };
+        _folderHandler.GetItemsAsync(Any<IFolder>()).Returns(items);
 
-        var result = await _folderHandler.GetItemsAsync(_mockFolder);
+        var result = await _folderHandler.Object.GetItemsAsync(_mockFolder.Object);
 
-        result.Should().HaveCount(2);
+        await Assert.That(result).Count().IsEqualTo(2);
     }
 
     [Test]
     public async Task GetParentAsync_Folder_ReturnsParentFolder()
     {
-        var parentFolder = Substitute.For<IFolder>();
-        _folderHandler.GetParentAsync(_mockFolder).Returns(parentFolder);
+        var parentFolder = Mock.Of<IFolder>();
+        _folderHandler.GetParentAsync(Any<IFolder>()).Returns(parentFolder.Object);
 
-        var result = await _folderHandler.GetParentAsync(_mockFolder);
+        var result = await _folderHandler.Object.GetParentAsync(_mockFolder.Object);
 
-        result.Should().BeSameAs(parentFolder);
+        await Assert.That(result).IsSameReferenceAs(parentFolder.Object);
     }
 
     #endregion
@@ -429,22 +423,22 @@ public class FileSystemAdapterTests
     public async Task TryGetItemAsync_ReturnsItem_WhenExists()
     {
         const string itemName = "existing";
-        var storageItem = Substitute.For<IStorageItem>();
-        _folderHandler.TryGetItemAsync(_mockFolder, itemName).Returns(storageItem);
+        var storageItem = Mock.Of<IStorageItem>();
+        _folderHandler.TryGetItemAsync(Any<IFolder>(), itemName).Returns(storageItem.Object);
 
-        var result = await _folderHandler.TryGetItemAsync(_mockFolder, itemName);
+        var result = await _folderHandler.Object.TryGetItemAsync(_mockFolder.Object, itemName);
 
-        result.Should().BeSameAs(storageItem);
+        await Assert.That(result).IsSameReferenceAs(storageItem.Object);
     }
 
     [Test]
     public async Task TryGetItemAsync_ReturnsNull_WhenNotExists()
     {
-        _folderHandler.TryGetItemAsync(_mockFolder, "nonexistent").Returns((IStorageItem?)null);
+        _folderHandler.TryGetItemAsync(Any<IFolder>(), "nonexistent").Returns((IStorageItem?)null);
 
-        var result = await _folderHandler.TryGetItemAsync(_mockFolder, "nonexistent");
+        var result = await _folderHandler.Object.TryGetItemAsync(_mockFolder.Object, "nonexistent");
 
-        result.Should().BeNull();
+        await Assert.That(result).IsNull();
     }
 
     #endregion
@@ -456,9 +450,9 @@ public class FileSystemAdapterTests
     {
         const string desiredName = "renamedFolder";
 
-        await _folderHandler.RenameAsync(_mockFolder, desiredName);
+        await _folderHandler.Object.RenameAsync(_mockFolder.Object, desiredName);
 
-        await _folderHandler.Received(1).RenameAsync(_mockFolder, desiredName);
+        _folderHandler.RenameAsync(Any<IFolder>(), desiredName).WasCalled(Times.Once);
     }
 
     [Test]
@@ -466,10 +460,9 @@ public class FileSystemAdapterTests
     {
         const string desiredName = "renamedFolder";
 
-        await _folderHandler.RenameAsync(_mockFolder, desiredName, NameCollisionOption.GenerateUniqueName);
+        await _folderHandler.Object.RenameAsync(_mockFolder.Object, desiredName, NameCollisionOption.GenerateUniqueName);
 
-        await _folderHandler.Received(1).RenameAsync(
-            _mockFolder, desiredName, NameCollisionOption.GenerateUniqueName);
+        _folderHandler.RenameAsync(Any<IFolder>(), desiredName, NameCollisionOption.GenerateUniqueName).WasCalled(Times.Once);
     }
 
     #endregion
@@ -479,23 +472,23 @@ public class FileSystemAdapterTests
     [Test]
     public async Task GetFileAsync_PropagatesException_WhenHandlerThrows()
     {
-        _folderHandler.GetFileAsync(_mockFolder, Arg.Any<string>())
-            .Returns<IFile>(x => throw new FileNotFoundException("Not found"));
+        _folderHandler.GetFileAsync(Any<IFolder>(), Any<string>())
+            .Throws(new FileNotFoundException("Not found"));
 
-        var act = async () => await _folderHandler.GetFileAsync(_mockFolder, "missing.txt");
+        var act = async () => await _folderHandler.Object.GetFileAsync(_mockFolder.Object, "missing.txt");
 
-        await act.Should().ThrowAsync<FileNotFoundException>();
+        await Assert.That(act).ThrowsExactly<FileNotFoundException>();
     }
 
     [Test]
     public async Task DeleteAsync_PropagatesException_WhenHandlerThrows()
     {
-        _folderHandler.DeleteAsync(Arg.Any<IFolder>())
-            .Returns(x => throw new UnauthorizedAccessException("Access denied"));
+        _folderHandler.DeleteAsync(Any<IFolder>())
+            .Throws(new UnauthorizedAccessException("Access denied"));
 
-        var act = async () => await _folderHandler.DeleteAsync(_mockFolder);
+        var act = async () => await _folderHandler.Object.DeleteAsync(_mockFolder.Object);
 
-        await act.Should().ThrowAsync<UnauthorizedAccessException>();
+        await Assert.That(act).ThrowsExactly<UnauthorizedAccessException>();
     }
 
     #endregion
@@ -503,27 +496,27 @@ public class FileSystemAdapterTests
     #region IStorageItem Properties
 
     [Test]
-    public void IFile_Properties_CanBeConfigured()
+    public async Task IFile_Properties_CanBeConfigured()
     {
         _mockFile.Name.Returns("test.txt");
         _mockFile.Path.Returns("/path/to/test.txt");
         _mockFile.FolderRelativeId.Returns("folder-123");
 
-        _mockFile.Name.Should().Be("test.txt");
-        _mockFile.Path.Should().Be("/path/to/test.txt");
-        _mockFile.FolderRelativeId.Should().Be("folder-123");
+        await Assert.That(_mockFile.Object.Name).IsEqualTo("test.txt");
+        await Assert.That(_mockFile.Object.Path).IsEqualTo("/path/to/test.txt");
+        await Assert.That(_mockFile.Object.FolderRelativeId).IsEqualTo("folder-123");
     }
 
     [Test]
-    public void IFolder_Properties_CanBeConfigured()
+    public async Task IFolder_Properties_CanBeConfigured()
     {
         _mockFolder.Name.Returns("testFolder");
         _mockFolder.Path.Returns("/path/to/testFolder");
         _mockFolder.FolderRelativeId.Returns("folder-456");
 
-        _mockFolder.Name.Should().Be("testFolder");
-        _mockFolder.Path.Should().Be("/path/to/testFolder");
-        _mockFolder.FolderRelativeId.Should().Be("folder-456");
+        await Assert.That(_mockFolder.Object.Name).IsEqualTo("testFolder");
+        await Assert.That(_mockFolder.Object.Path).IsEqualTo("/path/to/testFolder");
+        await Assert.That(_mockFolder.Object.FolderRelativeId).IsEqualTo("folder-456");
     }
 
     [Test]
@@ -531,9 +524,9 @@ public class FileSystemAdapterTests
     {
         _mockFile.GetSizeAsync().Returns(1024UL);
 
-        var size = await _mockFile.GetSizeAsync();
+        var size = await _mockFile.Object.GetSizeAsync();
 
-        size.Should().Be(1024UL);
+        await Assert.That(size).IsEqualTo(1024UL);
     }
 
     [Test]
@@ -541,9 +534,9 @@ public class FileSystemAdapterTests
     {
         _mockFile.GetSizeAsync().Returns(0UL);
 
-        var size = await _mockFile.GetSizeAsync();
+        var size = await _mockFile.Object.GetSizeAsync();
 
-        size.Should().Be(0UL);
+        await Assert.That(size).IsEqualTo(0UL);
     }
 
     #endregion
@@ -551,39 +544,39 @@ public class FileSystemAdapterTests
     #region Enum Validation
 
     [Test]
-    public void NameCollisionOption_HasExpectedValues()
+    public async Task NameCollisionOption_HasExpectedValues()
     {
-        Enum.GetValues<NameCollisionOption>().Should().HaveCount(3);
-        NameCollisionOption.GenerateUniqueName.Should().Be((NameCollisionOption)0);
-        NameCollisionOption.ReplaceExisting.Should().Be((NameCollisionOption)1);
-        NameCollisionOption.FailIfExists.Should().Be((NameCollisionOption)2);
+        await Assert.That(Enum.GetValues<NameCollisionOption>()).Count().IsEqualTo(3);
+        await Assert.That(NameCollisionOption.GenerateUniqueName).IsEqualTo((NameCollisionOption)0);
+        await Assert.That(NameCollisionOption.ReplaceExisting).IsEqualTo((NameCollisionOption)1);
+        await Assert.That(NameCollisionOption.FailIfExists).IsEqualTo((NameCollisionOption)2);
     }
 
     [Test]
-    public void CreationCollisionOption_HasExpectedValues()
+    public async Task CreationCollisionOption_HasExpectedValues()
     {
-        Enum.GetValues<CreationCollisionOption>().Should().HaveCount(4);
-        CreationCollisionOption.GenerateUniqueName.Should().Be((CreationCollisionOption)0);
+        await Assert.That(Enum.GetValues<CreationCollisionOption>()).Count().IsEqualTo(4);
+        await Assert.That(CreationCollisionOption.GenerateUniqueName).IsEqualTo((CreationCollisionOption)0);
     }
 
     [Test]
-    public void FileAccessMode_HasExpectedValues()
+    public async Task FileAccessMode_HasExpectedValues()
     {
-        Enum.GetValues<FileAccessMode>().Should().HaveCount(2);
-        FileAccessMode.Read.Should().Be((FileAccessMode)0);
-        FileAccessMode.ReadWrite.Should().Be((FileAccessMode)1);
+        await Assert.That(Enum.GetValues<FileAccessMode>()).Count().IsEqualTo(2);
+        await Assert.That(FileAccessMode.Read).IsEqualTo((FileAccessMode)0);
+        await Assert.That(FileAccessMode.ReadWrite).IsEqualTo((FileAccessMode)1);
     }
 
     [Test]
-    public void StorageDeletionOption_HasExpectedValues()
+    public async Task StorageDeletionOption_HasExpectedValues()
     {
-        Enum.GetValues<StorageDeletionOption>().Should().HaveCount(2);
+        await Assert.That(Enum.GetValues<StorageDeletionOption>()).Count().IsEqualTo(2);
     }
 
     [Test]
-    public void StorageOpenOptions_HasExpectedValues()
+    public async Task StorageOpenOptions_HasExpectedValues()
     {
-        Enum.GetValues<StorageOpenOptions>().Should().HaveCount(3);
+        await Assert.That(Enum.GetValues<StorageOpenOptions>()).Count().IsEqualTo(3);
     }
 
     #endregion
@@ -591,40 +584,40 @@ public class FileSystemAdapterTests
     #region FileSystemProvider - Singleton
 
     [Test]
-    public void Instance_ReturnsNonNullInstance()
+    public async Task Instance_ReturnsNonNullInstance()
     {
         var instance = FileSystemProvider.Instance;
 
-        instance.Should().NotBeNull();
+        await Assert.That(instance).IsNotNull();
     }
 
     [Test]
-    public void Instance_ReturnsSameInstance_OnMultipleCalls()
+    public async Task Instance_ReturnsSameInstance_OnMultipleCalls()
     {
         var first = FileSystemProvider.Instance;
         var second = FileSystemProvider.Instance;
 
-        first.Should().BeSameAs(second);
+        await Assert.That(first).IsSameReferenceAs(second);
     }
 
     [Test]
-    public void GetService_ThrowsInvalidOperationException_WhenServiceProviderIsNull()
+    public async Task GetService_ThrowsInvalidOperationException_WhenServiceProviderIsNull()
     {
         var instance = FileSystemProvider.Instance;
 
         var act = () => instance.GetService<IFileHandler>();
 
-        act.Should().Throw<InvalidOperationException>();
+        await Assert.That(act).Throws<InvalidOperationException>();
     }
 
     [Test]
-    public void GetRequiredService_ThrowsInvalidOperationException_WhenServiceProviderIsNull()
+    public async Task GetRequiredService_ThrowsInvalidOperationException_WhenServiceProviderIsNull()
     {
         var instance = FileSystemProvider.Instance;
 
         var act = () => instance.GetRequiredService<IFileHandler>();
 
-        act.Should().Throw<InvalidOperationException>();
+        await Assert.That(act).Throws<InvalidOperationException>();
     }
 
     #endregion
@@ -632,34 +625,35 @@ public class FileSystemAdapterTests
     #region ServiceCollectionExtensions - EnsureIfExists
 
     [Test]
-    public void EnsureIfExists_ThrowsArgumentNullException_WhenServicesIsNull()
+    public async Task EnsureIfExists_ThrowsArgumentNullException_WhenServicesIsNull()
     {
         IServiceCollection? nullServices = null;
 
         var act = () => nullServices!.EnsureIfExists<IFileHandler>();
 
-        act.Should().Throw<ArgumentNullException>();
+        await Assert.That(act).Throws<ArgumentNullException>();
     }
 
     [Test]
-    public void EnsureIfExists_ThrowsInvalidOperationException_WhenServiceTypeIsNotRegistered()
+    public async Task EnsureIfExists_ThrowsInvalidOperationException_WhenServiceTypeIsNotRegistered()
     {
         var services = new ServiceCollection();
 
         var act = () => services.EnsureIfExists<IFileHandler>();
 
-        act.Should().Throw<InvalidOperationException>();
+        await Assert.That(act).Throws<InvalidOperationException>();
     }
 
     [Test]
-    public void EnsureIfExists_Succeeds_WhenServiceTypeIsRegistered()
+    public async Task EnsureIfExists_Succeeds_WhenServiceTypeIsRegistered()
     {
         var services = new ServiceCollection();
-        services.AddSingleton(Substitute.For<IFileHandler>());
+        var mockFileHandler = Mock.Of<IFileHandler>();
+        services.AddSingleton(mockFileHandler.Object);
 
         var act = () => services.EnsureIfExists<IFileHandler>();
 
-        act.Should().NotThrow();
+        await Assert.That(act).ThrowsNothing();
     }
 
     #endregion

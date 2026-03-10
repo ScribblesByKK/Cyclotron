@@ -17,10 +17,10 @@ For the canonical, authoritative test guidance see:
 | Library | Purpose |
 |---|---|
 | **TUnit** | Test framework — use `[Test]`, `[Before(Test)]`, `[After(Test)]`, `[Category("…")]` |
-| **AwesomeAssertions** | Assertions — `using AwesomeAssertions;` |
-| **NSubstitute** | Mocking — `Substitute.For<T>()`, `.Returns()`, `.Received()` |
+| **TUnit Assertions** | Built-in assertions — `await Assert.That(value).IsEqualTo(expected)` |
+| **TUnit.Mocks** | AOT-compatible source-generated mocking — `Mock.Of<T>()`, `.Returns()`, `.WasCalled()` |
 
-**Never** use xUnit, NUnit, MSTest, FluentAssertions, Moq, or raw `Assert.*`.
+**Never** use xUnit, NUnit, MSTest, FluentAssertions, AwesomeAssertions, Moq, NSubstitute, or raw `Assert.*`.
 
 ---
 
@@ -65,12 +65,12 @@ public class FileSystemAdapterTests { … }
 ### Unit tests — mock in `[Before(Test)]`, use `null!` fields
 
 ```csharp
-private ISomeDependency _dep = null!;
+private Mock<ISomeDependency> _dep = null!;
 
 [Before(Test)]
 public void Setup()
 {
-    _dep = Substitute.For<ISomeDependency>();
+    _dep = Mock.Of<ISomeDependency>();
 }
 ```
 
@@ -101,22 +101,39 @@ Never share a `ServiceProvider` between tests.
 
 ### Assertion style
 
-- `.Should().BeSameAs()` — reference equality (mock instance)
-- `.Should().Be()` — value equality
-- `await act.Should().ThrowAsync<TException>()` — for async exception assertions
+All assertions are async and must be awaited:
+
+- `await Assert.That(actual).IsEqualTo(expected)` — value equality
+- `await Assert.That(actual).IsSameReferenceAs(expected)` — reference equality (mock instance)
+- `await Assert.That(actual).IsNotNull()` — null checks
+- `await Assert.That(actual).IsTrue()` / `.IsFalse()` — boolean assertions
+- `await Assert.That(act).Throws<TException>()` — exception assertions
+- `await Assert.That(act).ThrowsNothing()` — no-throw assertions
 - Assign the `act` lambda before asserting: `var act = async () => await …;`
 
-### Exception propagation
+### Mock setup and verification
 
 ```csharp
-_dep.SomeMethod(Arg.Any<string>())
-    .Returns<T>(x => throw new InvalidOperationException("…"));
+// Setup return values
+_dep.SomeMethod(Any<string>()).Returns(expectedValue);
+
+// Setup exceptions
+_dep.SomeMethod(Any<string>()).Throws(new InvalidOperationException("…"));
+
+// Setup callbacks
+_dep.SomeMethod(Any<string>()).Callback(() => { /* side effect */ });
+
+// Verify calls
+_dep.SomeMethod("arg").WasCalled(Times.Once);
+_dep.SomeMethod(Any<string>()).WasNeverCalled();
 ```
 
-### Verify call counts
+### Argument matchers
 
-- `_dep.Received(1).Method(…)` — expected exactly once
-- `_dep.DidNotReceive().Method(…)` — must not be called
+- `Any()` or `Any<T>()` — match any argument
+- `Is<T>(predicate)` — match with predicate
+- `IsNull<T>()` — match null values
+- Raw values — exact match
 
 ---
 
