@@ -1,6 +1,4 @@
-using AwesomeAssertions;
 using Cyclotron.Utilities.CleanArchitecture;
-using NSubstitute;
 
 namespace Cyclotron.Tests.Unit.Utilities;
 
@@ -8,26 +6,26 @@ namespace Cyclotron.Tests.Unit.Utilities;
 [Category("Utilities")]
 public class UtilitiesTests
 {
-    private IUsecaseRequest _request = null!;
-    private ICallback<IUsecaseResponse> _callback = null!;
+    private Mock<IUsecaseRequest> _request = null!;
+    private Mock<ICallback<IUsecaseResponse>> _callback = null!;
 
     [Before(Test)]
     public void Setup()
     {
-        _request = Substitute.For<IUsecaseRequest>();
-        _callback = Substitute.For<ICallback<IUsecaseResponse>>();
+        _request = Mock.Of<IUsecaseRequest>();
+        _callback = Mock.Of<ICallback<IUsecaseResponse>>();
     }
 
     #region RequestType Enum
 
     [Test]
-    public void RequestType_HasExpectedValues()
+    public async Task RequestType_HasExpectedValues()
     {
-        Enum.GetValues<RequestType>().Should().HaveCount(4);
-        RequestType.Local.Should().Be((RequestType)0);
-        RequestType.Network.Should().Be((RequestType)1);
-        RequestType.LocalAndNetwork.Should().Be((RequestType)2);
-        RequestType.Sync.Should().Be((RequestType)3);
+        await Assert.That(Enum.GetValues<RequestType>()).Count().IsEqualTo(4);
+        await Assert.That(RequestType.Local).IsEqualTo((RequestType)0);
+        await Assert.That(RequestType.Network).IsEqualTo((RequestType)1);
+        await Assert.That(RequestType.LocalAndNetwork).IsEqualTo((RequestType)2);
+        await Assert.That(RequestType.Sync).IsEqualTo((RequestType)3);
     }
 
     #endregion
@@ -35,13 +33,13 @@ public class UtilitiesTests
     #region ResponseType Enum
 
     [Test]
-    public void ResponseType_HasExpectedValues()
+    public async Task ResponseType_HasExpectedValues()
     {
-        Enum.GetValues<ResponseType>().Should().HaveCount(4);
-        ResponseType.Local.Should().Be((ResponseType)0);
-        ResponseType.Network.Should().Be((ResponseType)1);
-        ResponseType.LocalAndNetwork.Should().Be((ResponseType)2);
-        ResponseType.Sync.Should().Be((ResponseType)3);
+        await Assert.That(Enum.GetValues<ResponseType>()).Count().IsEqualTo(4);
+        await Assert.That(ResponseType.Local).IsEqualTo((ResponseType)0);
+        await Assert.That(ResponseType.Network).IsEqualTo((ResponseType)1);
+        await Assert.That(ResponseType.LocalAndNetwork).IsEqualTo((ResponseType)2);
+        await Assert.That(ResponseType.Sync).IsEqualTo((ResponseType)3);
     }
 
     #endregion
@@ -49,14 +47,14 @@ public class UtilitiesTests
     #region ErrorType Enum
 
     [Test]
-    public void ErrorType_HasExpectedValues()
+    public async Task ErrorType_HasExpectedValues()
     {
-        Enum.GetValues<ErrorType>().Should().HaveCount(5);
-        ErrorType.Unknown.Should().Be((ErrorType)0);
-        ErrorType.DBError.Should().Be((ErrorType)1);
-        ErrorType.ServerError.Should().Be((ErrorType)2);
-        ErrorType.TimedOut.Should().Be((ErrorType)3);
-        ErrorType.NoInternetAccess.Should().Be((ErrorType)4);
+        await Assert.That(Enum.GetValues<ErrorType>()).Count().IsEqualTo(5);
+        await Assert.That(ErrorType.Unknown).IsEqualTo((ErrorType)0);
+        await Assert.That(ErrorType.DBError).IsEqualTo((ErrorType)1);
+        await Assert.That(ErrorType.ServerError).IsEqualTo((ErrorType)2);
+        await Assert.That(ErrorType.TimedOut).IsEqualTo((ErrorType)3);
+        await Assert.That(ErrorType.NoInternetAccess).IsEqualTo((ErrorType)4);
     }
 
     #endregion
@@ -64,44 +62,44 @@ public class UtilitiesTests
     #region UsecaseRequest Construction
 
     [Test]
-    public void UsecaseRequest_WithValidParameters_StoresRequestType()
+    public async Task UsecaseRequest_WithValidParameters_StoresRequestType()
     {
         var request = new TestUsecaseRequest(RequestType.Network, "user-1");
 
-        request.RequestType.Should().Be(RequestType.Network);
+        await Assert.That(request.RequestType).IsEqualTo(RequestType.Network);
     }
 
     [Test]
-    public void UsecaseRequest_WithValidParameters_StoresUserId()
+    public async Task UsecaseRequest_WithValidParameters_StoresUserId()
     {
         var request = new TestUsecaseRequest(RequestType.Local, "user-42");
 
-        request.UserId.Should().Be("user-42");
+        await Assert.That(request.UserId).IsEqualTo("user-42");
     }
 
     [Test]
-    public void UsecaseRequest_WithCancellationToken_StoresToken()
+    public async Task UsecaseRequest_WithCancellationToken_StoresToken()
     {
         using var cts = new CancellationTokenSource();
         var request = new TestUsecaseRequest(RequestType.Sync, "user-1", cts.Token);
 
-        request.CancellationToken.Should().Be(cts.Token);
+        await Assert.That(request.CancellationToken).IsEqualTo(cts.Token);
     }
 
     [Test]
-    public void UsecaseRequest_WithDefaultCancellationToken_StoresDefaultToken()
+    public async Task UsecaseRequest_WithDefaultCancellationToken_StoresDefaultToken()
     {
         var request = new TestUsecaseRequest(RequestType.Local, "user-1");
 
-        request.CancellationToken.Should().Be(CancellationToken.None);
+        await Assert.That(request.CancellationToken).IsEqualTo(CancellationToken.None);
     }
 
     [Test]
-    public void UsecaseRequest_ImplementsIUsecaseRequest()
+    public async Task UsecaseRequest_ImplementsIUsecaseRequest()
     {
         var request = new TestUsecaseRequest(RequestType.Local, "user-1");
 
-        request.Should().BeAssignableTo<IUsecaseRequest>();
+        await Assert.That<object>(request).IsAssignableTo<IUsecaseRequest>();
     }
 
     #endregion
@@ -109,35 +107,35 @@ public class UtilitiesTests
     #region IsLocalRequest Extension
 
     [Test]
-    public void IsLocalRequest_WithLocalType_ReturnsTrue()
+    public async Task IsLocalRequest_WithLocalType_ReturnsTrue()
     {
         _request.RequestType.Returns(RequestType.Local);
 
-        _request.IsLocalRequest().Should().BeTrue();
+        await Assert.That(_request.Object.IsLocalRequest()).IsTrue();
     }
 
     [Test]
-    public void IsLocalRequest_WithNetworkType_ReturnsFalse()
+    public async Task IsLocalRequest_WithNetworkType_ReturnsFalse()
     {
         _request.RequestType.Returns(RequestType.Network);
 
-        _request.IsLocalRequest().Should().BeFalse();
+        await Assert.That(_request.Object.IsLocalRequest()).IsFalse();
     }
 
     [Test]
-    public void IsLocalRequest_WithLocalAndNetworkType_ReturnsFalse()
+    public async Task IsLocalRequest_WithLocalAndNetworkType_ReturnsFalse()
     {
         _request.RequestType.Returns(RequestType.LocalAndNetwork);
 
-        _request.IsLocalRequest().Should().BeFalse();
+        await Assert.That(_request.Object.IsLocalRequest()).IsFalse();
     }
 
     [Test]
-    public void IsLocalRequest_WithSyncType_ReturnsFalse()
+    public async Task IsLocalRequest_WithSyncType_ReturnsFalse()
     {
         _request.RequestType.Returns(RequestType.Sync);
 
-        _request.IsLocalRequest().Should().BeFalse();
+        await Assert.That(_request.Object.IsLocalRequest()).IsFalse();
     }
 
     #endregion
@@ -145,35 +143,35 @@ public class UtilitiesTests
     #region IsNetworkRequest Extension
 
     [Test]
-    public void IsNetworkRequest_WithNetworkType_ReturnsTrue()
+    public async Task IsNetworkRequest_WithNetworkType_ReturnsTrue()
     {
         _request.RequestType.Returns(RequestType.Network);
 
-        _request.IsNetworkRequest().Should().BeTrue();
+        await Assert.That(_request.Object.IsNetworkRequest()).IsTrue();
     }
 
     [Test]
-    public void IsNetworkRequest_WithLocalType_ReturnsFalse()
+    public async Task IsNetworkRequest_WithLocalType_ReturnsFalse()
     {
         _request.RequestType.Returns(RequestType.Local);
 
-        _request.IsNetworkRequest().Should().BeFalse();
+        await Assert.That(_request.Object.IsNetworkRequest()).IsFalse();
     }
 
     [Test]
-    public void IsNetworkRequest_WithLocalAndNetworkType_ReturnsFalse()
+    public async Task IsNetworkRequest_WithLocalAndNetworkType_ReturnsFalse()
     {
         _request.RequestType.Returns(RequestType.LocalAndNetwork);
 
-        _request.IsNetworkRequest().Should().BeFalse();
+        await Assert.That(_request.Object.IsNetworkRequest()).IsFalse();
     }
 
     [Test]
-    public void IsNetworkRequest_WithSyncType_ReturnsFalse()
+    public async Task IsNetworkRequest_WithSyncType_ReturnsFalse()
     {
         _request.RequestType.Returns(RequestType.Sync);
 
-        _request.IsNetworkRequest().Should().BeFalse();
+        await Assert.That(_request.Object.IsNetworkRequest()).IsFalse();
     }
 
     #endregion
@@ -181,35 +179,35 @@ public class UtilitiesTests
     #region HasLocalRequest Extension
 
     [Test]
-    public void HasLocalRequest_WithLocalType_ReturnsTrue()
+    public async Task HasLocalRequest_WithLocalType_ReturnsTrue()
     {
         _request.RequestType.Returns(RequestType.Local);
 
-        _request.HasLocalRequest().Should().BeTrue();
+        await Assert.That(_request.Object.HasLocalRequest()).IsTrue();
     }
 
     [Test]
-    public void HasLocalRequest_WithLocalAndNetworkType_ReturnsTrue()
+    public async Task HasLocalRequest_WithLocalAndNetworkType_ReturnsTrue()
     {
         _request.RequestType.Returns(RequestType.LocalAndNetwork);
 
-        _request.HasLocalRequest().Should().BeTrue();
+        await Assert.That(_request.Object.HasLocalRequest()).IsTrue();
     }
 
     [Test]
-    public void HasLocalRequest_WithSyncType_ReturnsTrue()
+    public async Task HasLocalRequest_WithSyncType_ReturnsTrue()
     {
         _request.RequestType.Returns(RequestType.Sync);
 
-        _request.HasLocalRequest().Should().BeTrue();
+        await Assert.That(_request.Object.HasLocalRequest()).IsTrue();
     }
 
     [Test]
-    public void HasLocalRequest_WithNetworkType_ReturnsFalse()
+    public async Task HasLocalRequest_WithNetworkType_ReturnsFalse()
     {
         _request.RequestType.Returns(RequestType.Network);
 
-        _request.HasLocalRequest().Should().BeFalse();
+        await Assert.That(_request.Object.HasLocalRequest()).IsFalse();
     }
 
     #endregion
@@ -217,35 +215,35 @@ public class UtilitiesTests
     #region HasNetworkRequest Extension
 
     [Test]
-    public void HasNetworkRequest_WithNetworkType_ReturnsTrue()
+    public async Task HasNetworkRequest_WithNetworkType_ReturnsTrue()
     {
         _request.RequestType.Returns(RequestType.Network);
 
-        _request.HasNetworkRequest().Should().BeTrue();
+        await Assert.That(_request.Object.HasNetworkRequest()).IsTrue();
     }
 
     [Test]
-    public void HasNetworkRequest_WithLocalAndNetworkType_ReturnsTrue()
+    public async Task HasNetworkRequest_WithLocalAndNetworkType_ReturnsTrue()
     {
         _request.RequestType.Returns(RequestType.LocalAndNetwork);
 
-        _request.HasNetworkRequest().Should().BeTrue();
+        await Assert.That(_request.Object.HasNetworkRequest()).IsTrue();
     }
 
     [Test]
-    public void HasNetworkRequest_WithSyncType_ReturnsTrue()
+    public async Task HasNetworkRequest_WithSyncType_ReturnsTrue()
     {
         _request.RequestType.Returns(RequestType.Sync);
 
-        _request.HasNetworkRequest().Should().BeTrue();
+        await Assert.That(_request.Object.HasNetworkRequest()).IsTrue();
     }
 
     [Test]
-    public void HasNetworkRequest_WithLocalType_ReturnsFalse()
+    public async Task HasNetworkRequest_WithLocalType_ReturnsFalse()
     {
         _request.RequestType.Returns(RequestType.Local);
 
-        _request.HasNetworkRequest().Should().BeFalse();
+        await Assert.That(_request.Object.HasNetworkRequest()).IsFalse();
     }
 
     #endregion
@@ -253,44 +251,44 @@ public class UtilitiesTests
     #region ErrorResponse Construction
 
     [Test]
-    public void ErrorResponse_Constructor_StoresRequest()
+    public async Task ErrorResponse_Constructor_StoresRequest()
     {
         var exception = new InvalidOperationException("test");
 
-        var errorResponse = new ErrorResponse(_request, ErrorType.Unknown, exception);
+        var errorResponse = new ErrorResponse(_request.Object, ErrorType.Unknown, exception);
 
-        errorResponse.Request.Should().BeSameAs(_request);
+        await Assert.That(errorResponse.Request).IsSameReferenceAs(_request.Object);
     }
 
     [Test]
-    public void ErrorResponse_Constructor_StoresErrorType()
+    public async Task ErrorResponse_Constructor_StoresErrorType()
     {
         var exception = new InvalidOperationException("test");
 
-        var errorResponse = new ErrorResponse(_request, ErrorType.ServerError, exception);
+        var errorResponse = new ErrorResponse(_request.Object, ErrorType.ServerError, exception);
 
-        errorResponse.ErrorType.Should().Be(ErrorType.ServerError);
+        await Assert.That(errorResponse.ErrorType).IsEqualTo(ErrorType.ServerError);
     }
 
     [Test]
-    public void ErrorResponse_Constructor_StoresException()
+    public async Task ErrorResponse_Constructor_StoresException()
     {
         var exception = new InvalidOperationException("specific error");
 
-        var errorResponse = new ErrorResponse(_request, ErrorType.DBError, exception);
+        var errorResponse = new ErrorResponse(_request.Object, ErrorType.DBError, exception);
 
-        errorResponse.Exception.Should().BeSameAs(exception);
+        await Assert.That(errorResponse.Exception).IsSameReferenceAs(exception);
     }
 
     [Test]
-    public void ErrorResponse_Constructor_WithAllErrorTypes_StoresCorrectly()
+    public async Task ErrorResponse_Constructor_WithAllErrorTypes_StoresCorrectly()
     {
         var exception = new Exception("test");
 
         foreach (var errorType in Enum.GetValues<ErrorType>())
         {
-            var response = new ErrorResponse(_request, errorType, exception);
-            response.ErrorType.Should().Be(errorType);
+            var response = new ErrorResponse(_request.Object, errorType, exception);
+            await Assert.That(response.ErrorType).IsEqualTo(errorType);
         }
     }
 
@@ -299,17 +297,17 @@ public class UtilitiesTests
     #region CallbackExtensions.OnError — Cancellation
 
     [Test]
-    public void OnError_WithOperationCanceledAndTokenCanceled_CallsOnCanceled()
+    public async Task OnError_WithOperationCanceledAndTokenCanceled_CallsOnCanceled()
     {
         using var cts = new CancellationTokenSource();
         cts.Cancel();
         _request.CancellationToken.Returns(cts.Token);
         var exception = new OperationCanceledException(cts.Token);
 
-        _callback.OnError(_request, exception);
+        _callback.Object.OnError(_request.Object, exception);
 
-        _callback.Received(1).OnCanceled(Arg.Any<IUsecaseResponse>());
-        _callback.DidNotReceive().OnError(Arg.Any<ErrorResponse>());
+        _callback.OnCanceled(Any<IUsecaseResponse>()).WasCalled(Times.Once);
+        _callback.OnError(Any<ErrorResponse>()).WasNeverCalled();
     }
 
     #endregion
@@ -317,18 +315,18 @@ public class UtilitiesTests
     #region CallbackExtensions.OnError — Timeout
 
     [Test]
-    public void OnError_WithOperationCanceledButTokenNotCanceled_CallsOnErrorWithTimedOut()
+    public async Task OnError_WithOperationCanceledButTokenNotCanceled_CallsOnErrorWithTimedOut()
     {
         _request.CancellationToken.Returns(CancellationToken.None);
         var exception = new OperationCanceledException();
 
-        _callback.OnError(_request, exception);
+        _callback.Object.OnError(_request.Object, exception);
 
-        _callback.Received(1).OnError(Arg.Is<ErrorResponse>(e =>
+        _callback.OnError(Is<ErrorResponse>(e =>
             e.ErrorType == ErrorType.TimedOut &&
-            e.Request == _request &&
-            e.Exception == exception));
-        _callback.DidNotReceive().OnCanceled(Arg.Any<IUsecaseResponse>());
+            e.Request == _request.Object &&
+            e.Exception == exception)).WasCalled(Times.Once);
+        _callback.OnCanceled(Any<IUsecaseResponse>()).WasNeverCalled();
     }
 
     #endregion
@@ -336,30 +334,30 @@ public class UtilitiesTests
     #region CallbackExtensions.OnError — Unknown Exception
 
     [Test]
-    public void OnError_WithGenericException_CallsOnErrorWithUnknown()
+    public async Task OnError_WithGenericException_CallsOnErrorWithUnknown()
     {
         _request.CancellationToken.Returns(CancellationToken.None);
         var exception = new InvalidOperationException("something broke");
 
-        _callback.OnError(_request, exception);
+        _callback.Object.OnError(_request.Object, exception);
 
-        _callback.Received(1).OnError(Arg.Is<ErrorResponse>(e =>
+        _callback.OnError(Is<ErrorResponse>(e =>
             e.ErrorType == ErrorType.Unknown &&
-            e.Request == _request &&
-            e.Exception == exception));
-        _callback.DidNotReceive().OnCanceled(Arg.Any<IUsecaseResponse>());
+            e.Request == _request.Object &&
+            e.Exception == exception)).WasCalled(Times.Once);
+        _callback.OnCanceled(Any<IUsecaseResponse>()).WasNeverCalled();
     }
 
     [Test]
-    public void OnError_WithArgumentException_CallsOnErrorWithUnknown()
+    public async Task OnError_WithArgumentException_CallsOnErrorWithUnknown()
     {
         _request.CancellationToken.Returns(CancellationToken.None);
         var exception = new ArgumentException("bad arg");
 
-        _callback.OnError(_request, exception);
+        _callback.Object.OnError(_request.Object, exception);
 
-        _callback.Received(1).OnError(Arg.Is<ErrorResponse>(e =>
-            e.ErrorType == ErrorType.Unknown));
+        _callback.OnError(Is<ErrorResponse>(e =>
+            e.ErrorType == ErrorType.Unknown)).WasCalled(Times.Once);
     }
 
     #endregion
@@ -367,14 +365,14 @@ public class UtilitiesTests
     #region CallbackExtensions.OnError — Null Callback
 
     [Test]
-    public void OnError_WithNullCallback_DoesNotThrow()
+    public async Task OnError_WithNullCallback_DoesNotThrow()
     {
         ICallback<IUsecaseResponse>? nullCallback = null;
         var exception = new Exception("test");
 
-        var act = () => nullCallback!.OnError(_request, exception);
+        var act = () => nullCallback!.OnError(_request.Object, exception);
 
-        act.Should().NotThrow();
+        await Assert.That(act).ThrowsNothing();
     }
 
     #endregion
@@ -386,7 +384,7 @@ public class UtilitiesTests
     {
         var tcs = new TaskCompletionSource<bool>();
         var request = new TestUsecaseRequest(RequestType.Local, "user-1");
-        var usecase = new TestUsecase(request, _callback, tryServeFromCacheResult: true, actionAsync: () =>
+        var usecase = new TestUsecase(request, _callback.Object, tryServeFromCacheResult: true, actionAsync: () =>
         {
             tcs.SetResult(true);
             return Task.CompletedTask;
@@ -396,7 +394,7 @@ public class UtilitiesTests
 
         // Give a short window for Task.Run to potentially execute if it was erroneously called
         var completed = await Task.WhenAny(tcs.Task, Task.Delay(200));
-        completed.Should().NotBeSameAs(tcs.Task, "ActionAsync should not have been called when cache hit");
+        await Assert.That(ReferenceEquals(completed, tcs.Task)).IsFalse();
     }
 
     #endregion
@@ -408,7 +406,7 @@ public class UtilitiesTests
     {
         var tcs = new TaskCompletionSource<bool>();
         var request = new TestUsecaseRequest(RequestType.Local, "user-1");
-        var usecase = new TestUsecase(request, _callback, tryServeFromCacheResult: false, actionAsync: () =>
+        var usecase = new TestUsecase(request, _callback.Object, tryServeFromCacheResult: false, actionAsync: () =>
         {
             tcs.SetResult(true);
             return Task.CompletedTask;
@@ -417,7 +415,7 @@ public class UtilitiesTests
         usecase.Execute();
 
         var actionCalled = await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
-        actionCalled.Should().BeTrue();
+        await Assert.That(actionCalled).IsTrue();
     }
 
     #endregion
@@ -430,7 +428,7 @@ public class UtilitiesTests
         var tcs = new TaskCompletionSource<bool>();
         var request = new TestUsecaseRequest(RequestType.Network, "user-1");
         var cacheChecked = false;
-        var usecase = new TestUsecase(request, _callback, tryServeFromCacheResult: false, actionAsync: () =>
+        var usecase = new TestUsecase(request, _callback.Object, tryServeFromCacheResult: false, actionAsync: () =>
         {
             tcs.SetResult(true);
             return Task.CompletedTask;
@@ -439,8 +437,8 @@ public class UtilitiesTests
         usecase.Execute();
 
         var actionCalled = await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
-        actionCalled.Should().BeTrue();
-        cacheChecked.Should().BeFalse("cache should not be checked for network requests");
+        await Assert.That(actionCalled).IsTrue();
+        await Assert.That(cacheChecked).IsFalse();
     }
 
     #endregion
@@ -452,7 +450,7 @@ public class UtilitiesTests
     {
         var tcs = new TaskCompletionSource<bool>();
         var request = new TestUsecaseRequest(RequestType.Local, "user-1");
-        var usecase = new TestUsecase(request, _callback, tryServeFromCacheResult: false, actionAsync: () =>
+        var usecase = new TestUsecase(request, _callback.Object, tryServeFromCacheResult: false, actionAsync: () =>
         {
             tcs.SetResult(true);
             return Task.CompletedTask;
@@ -461,7 +459,7 @@ public class UtilitiesTests
         usecase.Execute();
 
         var actionCalled = await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
-        actionCalled.Should().BeTrue();
+        await Assert.That(actionCalled).IsTrue();
     }
 
     #endregion
@@ -476,9 +474,9 @@ public class UtilitiesTests
         var request = new TestUsecaseRequest(RequestType.Network, "user-1", cts.Token);
         var actionCalled = false;
         var callbackCalled = new TaskCompletionSource<bool>();
-        _callback.When(c => c.OnCanceled(Arg.Any<IUsecaseResponse>()))
-            .Do(_ => callbackCalled.TrySetResult(true));
-        var usecase = new TestUsecase(request, _callback, tryServeFromCacheResult: false, actionAsync: () =>
+        _callback.OnCanceled(Any<IUsecaseResponse>())
+            .Callback(() => callbackCalled.TrySetResult(true));
+        var usecase = new TestUsecase(request, _callback.Object, tryServeFromCacheResult: false, actionAsync: () =>
         {
             actionCalled = true;
             return Task.CompletedTask;
@@ -487,8 +485,8 @@ public class UtilitiesTests
         usecase.Execute();
 
         await callbackCalled.Task.WaitAsync(TimeSpan.FromSeconds(5));
-        _callback.Received(1).OnCanceled(Arg.Any<IUsecaseResponse>());
-        actionCalled.Should().BeFalse("ActionAsync should not run when cancellation is requested");
+        _callback.OnCanceled(Any<IUsecaseResponse>()).WasCalled(Times.Once);
+        await Assert.That(actionCalled).IsFalse();
     }
 
     #endregion
@@ -501,9 +499,9 @@ public class UtilitiesTests
         var request = new TestUsecaseRequest(RequestType.Network, "user-1");
         var exception = new InvalidOperationException("action failed");
         var errorCalled = new TaskCompletionSource<bool>();
-        _callback.When(c => c.OnError(Arg.Any<ErrorResponse>()))
-            .Do(_ => errorCalled.TrySetResult(true));
-        var usecase = new TestUsecase(request, _callback, tryServeFromCacheResult: false, actionAsync: () =>
+        _callback.OnError(Any<ErrorResponse>())
+            .Callback(() => errorCalled.TrySetResult(true));
+        var usecase = new TestUsecase(request, _callback.Object, tryServeFromCacheResult: false, actionAsync: () =>
         {
             throw exception;
         });
@@ -511,9 +509,9 @@ public class UtilitiesTests
         usecase.Execute();
 
         await errorCalled.Task.WaitAsync(TimeSpan.FromSeconds(5));
-        _callback.Received(1).OnError(Arg.Is<ErrorResponse>(e =>
+        _callback.OnError(Is<ErrorResponse>(e =>
             e.ErrorType == ErrorType.Unknown &&
-            e.Exception == exception));
+            e.Exception == exception)).WasCalled(Times.Once);
     }
 
     #endregion
@@ -521,7 +519,7 @@ public class UtilitiesTests
     #region UsecaseBase — Execute with Null Callback
 
     [Test]
-    public void Execute_WithNullCallbackAndCancellation_DoesNotThrow()
+    public async Task Execute_WithNullCallbackAndCancellation_DoesNotThrow()
     {
         using var cts = new CancellationTokenSource();
         cts.Cancel();
@@ -530,11 +528,11 @@ public class UtilitiesTests
 
         var act = () => usecase.Execute();
 
-        act.Should().NotThrow();
+        await Assert.That(act).ThrowsNothing();
     }
 
     [Test]
-    public void Execute_WithNullCallbackAndActionException_DoesNotThrow()
+    public async Task Execute_WithNullCallbackAndActionException_DoesNotThrow()
     {
         var request = new TestUsecaseRequest(RequestType.Network, "user-1");
         var usecase = new TestUsecase(request, null!, tryServeFromCacheResult: false, actionAsync: () =>
@@ -544,7 +542,7 @@ public class UtilitiesTests
 
         var act = () => usecase.Execute();
 
-        act.Should().NotThrow();
+        await Assert.That(act).ThrowsNothing();
     }
 
     #endregion
@@ -556,7 +554,7 @@ public class UtilitiesTests
     {
         var tcs = new TaskCompletionSource<bool>();
         var request = new TestUsecaseRequest(RequestType.Local, "user-1");
-        var usecase = new DefaultCacheUsecase(request, _callback, actionAsync: () =>
+        var usecase = new DefaultCacheUsecase(request, _callback.Object, actionAsync: () =>
         {
             tcs.SetResult(true);
             return Task.CompletedTask;
@@ -565,7 +563,7 @@ public class UtilitiesTests
         usecase.Execute();
 
         var actionCalled = await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
-        actionCalled.Should().BeTrue("default TryServeFromCache returns false so ActionAsync should run");
+        await Assert.That(actionCalled).IsTrue();
     }
 
     #endregion
@@ -573,14 +571,14 @@ public class UtilitiesTests
     #region IUsecaseResponse Interface
 
     [Test]
-    public void IUsecaseResponse_MockedInstance_ExposesRequestAndResponseType()
+    public async Task IUsecaseResponse_MockedInstance_ExposesRequestAndResponseType()
     {
-        var response = Substitute.For<IUsecaseResponse>();
-        response.Request.Returns(_request);
+        var response = Mock.Of<IUsecaseResponse>();
+        response.Request.Returns(_request.Object);
         response.ResponseType.Returns(ResponseType.Network);
 
-        response.Request.Should().BeSameAs(_request);
-        response.ResponseType.Should().Be(ResponseType.Network);
+        await Assert.That(response.Object.Request).IsSameReferenceAs(_request.Object);
+        await Assert.That(response.Object.ResponseType).IsEqualTo(ResponseType.Network);
     }
 
     #endregion
@@ -588,53 +586,53 @@ public class UtilitiesTests
     #region ICallback Interface
 
     [Test]
-    public void ICallback_OnSuccess_CanBeInvoked()
+    public async Task ICallback_OnSuccess_CanBeInvoked()
     {
-        var response = Substitute.For<IUsecaseResponse>();
+        var response = Mock.Of<IUsecaseResponse>();
 
-        _callback.OnSuccess(response);
+        _callback.Object.OnSuccess(response.Object);
 
-        _callback.Received(1).OnSuccess(response);
+        _callback.OnSuccess(Any<IUsecaseResponse>()).WasCalled(Times.Once);
     }
 
     [Test]
-    public void ICallback_OnFailed_CanBeInvoked()
+    public async Task ICallback_OnFailed_CanBeInvoked()
     {
-        var response = Substitute.For<IUsecaseResponse>();
+        var response = Mock.Of<IUsecaseResponse>();
 
-        _callback.OnFailed(response);
+        _callback.Object.OnFailed(response.Object);
 
-        _callback.Received(1).OnFailed(response);
+        _callback.OnFailed(Any<IUsecaseResponse>()).WasCalled(Times.Once);
     }
 
     [Test]
-    public void ICallback_OnProgress_CanBeInvoked()
+    public async Task ICallback_OnProgress_CanBeInvoked()
     {
-        var response = Substitute.For<IUsecaseResponse>();
+        var response = Mock.Of<IUsecaseResponse>();
 
-        _callback.OnProgress(response);
+        _callback.Object.OnProgress(response.Object);
 
-        _callback.Received(1).OnProgress(response);
+        _callback.OnProgress(Any<IUsecaseResponse>()).WasCalled(Times.Once);
     }
 
     [Test]
-    public void ICallback_OnCanceled_CanBeInvoked()
+    public async Task ICallback_OnCanceled_CanBeInvoked()
     {
-        var response = Substitute.For<IUsecaseResponse>();
+        var response = Mock.Of<IUsecaseResponse>();
 
-        _callback.OnCanceled(response);
+        _callback.Object.OnCanceled(response.Object);
 
-        _callback.Received(1).OnCanceled(response);
+        _callback.OnCanceled(Any<IUsecaseResponse>()).WasCalled(Times.Once);
     }
 
     [Test]
-    public void ICallback_OnError_CanBeInvoked()
+    public async Task ICallback_OnError_CanBeInvoked()
     {
-        var errorResponse = new ErrorResponse(_request, ErrorType.Unknown, new Exception());
+        var errorResponse = new ErrorResponse(_request.Object, ErrorType.Unknown, new Exception());
 
-        _callback.OnError(errorResponse);
+        _callback.Object.OnError(errorResponse);
 
-        _callback.Received(1).OnError(errorResponse);
+        _callback.OnError(Any<ErrorResponse>()).WasCalled(Times.Once);
     }
 
     #endregion

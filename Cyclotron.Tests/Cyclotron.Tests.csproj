@@ -6,16 +6,11 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
-    <IsAotCompatible>false</IsAotCompatible>
-    <IsTrimmable>false</IsTrimmable>
-    <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
-    <EnableSingleFileAnalyzer>false</EnableSingleFileAnalyzer>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="TUnit" />
-    <PackageReference Include="NSubstitute" />
-    <PackageReference Include="AwesomeAssertions" />
+    <PackageReference Include="TUnit.Mocks" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="Coverlet.Collector" />
     <PackageReference Include="Coverlet.MSBuild" />

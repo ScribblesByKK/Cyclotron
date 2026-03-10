@@ -1,10 +1,7 @@
 using Cyclotron.Telemetry.Configuration;
 using Cyclotron.Telemetry.Logging;
-using AwesomeAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using NSubstitute;
-using Serilog;
 using Serilog.Events;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
@@ -14,50 +11,50 @@ namespace Cyclotron.Tests.Unit.Telemetry;
 [Category("Telemetry")]
 public class TelemetryAdapterTests
 {
-    private Serilog.ILogger _serilogLogger = null!;
-    private ILogger<CyclotronLogger> _msLogger = null!;
+    private Mock<Serilog.ILogger> _serilogLoggerMock = null!;
+    private Mock<ILogger<CyclotronLogger>> _msLoggerMock = null!;
     private IOptions<CyclotronTelemetryOptions> _options = null!;
     private CyclotronTelemetryOptions _telemetryOptions = null!;
 
     [Before(Test)]
     public void Setup()
     {
-        _serilogLogger = Substitute.For<Serilog.ILogger>();
-        _msLogger = Substitute.For<ILogger<CyclotronLogger>>();
+        _serilogLoggerMock = Mock.Of<Serilog.ILogger>();
+        _msLoggerMock = Mock.Of<ILogger<CyclotronLogger>>();
         _telemetryOptions = new CyclotronTelemetryOptions();
         _options = Options.Create(_telemetryOptions);
 
         // Make ForContext return the same mock so Write calls are trackable
-        _serilogLogger.ForContext(Arg.Any<Serilog.Core.ILogEventEnricher>()).Returns(_serilogLogger);
+        _serilogLoggerMock.ForContext(Any<Serilog.Core.ILogEventEnricher>()).Returns(_serilogLoggerMock.Object);
     }
 
     #region Constructor & Validation
 
     [Test]
-    public void Constructor_WithValidParameters_Succeeds()
+    public async Task Constructor_WithValidParameters_Succeeds()
     {
-        var logger = new CyclotronLogger(_options, _serilogLogger, _msLogger);
+        var logger = new CyclotronLogger(_options, _serilogLoggerMock.Object, _msLoggerMock.Object);
 
-        logger.Should().NotBeNull();
+        await Assert.That(logger).IsNotNull();
     }
 
     [Test]
-    public void Constructor_SetsDefaultModuleName()
+    public async Task Constructor_SetsDefaultModuleName()
     {
-        var logger = new CyclotronLogger(_options, _serilogLogger, _msLogger);
+        var logger = new CyclotronLogger(_options, _serilogLoggerMock.Object, _msLoggerMock.Object);
 
-        logger.ModuleName.Should().Be("core");
+        await Assert.That(logger.ModuleName).IsEqualTo("core");
     }
 
     [Test]
-    public void Constructor_WithCustomDefaultModule_SetsModuleName()
+    public async Task Constructor_WithCustomDefaultModule_SetsModuleName()
     {
         _telemetryOptions.DefaultModule = "CustomModule";
         var options = Options.Create(_telemetryOptions);
 
-        var logger = new CyclotronLogger(options, _serilogLogger, _msLogger);
+        var logger = new CyclotronLogger(options, _serilogLoggerMock.Object, _msLoggerMock.Object);
 
-        logger.ModuleName.Should().Be("CustomModule");
+        await Assert.That(logger.ModuleName).IsEqualTo("CustomModule");
     }
 
     #endregion
@@ -65,33 +62,33 @@ public class TelemetryAdapterTests
     #region ForModule
 
     [Test]
-    public void ForModule_ReturnsNewLoggerInstance()
+    public async Task ForModule_ReturnsNewLoggerInstance()
     {
-        var logger = new CyclotronLogger(_options, _serilogLogger, _msLogger);
+        var logger = new CyclotronLogger(_options, _serilogLoggerMock.Object, _msLoggerMock.Object);
 
         var moduleLogger = logger.ForModule("TestModule");
 
-        moduleLogger.Should().NotBeSameAs(logger);
+        await Assert.That(moduleLogger).IsNotSameReferenceAs(logger);
     }
 
     [Test]
-    public void ForModule_SetsCorrectModuleName()
+    public async Task ForModule_SetsCorrectModuleName()
     {
-        var logger = new CyclotronLogger(_options, _serilogLogger, _msLogger);
+        var logger = new CyclotronLogger(_options, _serilogLoggerMock.Object, _msLoggerMock.Object);
 
         var moduleLogger = logger.ForModule("TestModule");
 
-        moduleLogger.ModuleName.Should().Be("TestModule");
+        await Assert.That(moduleLogger.ModuleName).IsEqualTo("TestModule");
     }
 
     [Test]
-    public void ForModule_DoesNotAffectOriginalLogger()
+    public async Task ForModule_DoesNotAffectOriginalLogger()
     {
-        var logger = new CyclotronLogger(_options, _serilogLogger, _msLogger);
+        var logger = new CyclotronLogger(_options, _serilogLoggerMock.Object, _msLoggerMock.Object);
 
         _ = logger.ForModule("TestModule");
 
-        logger.ModuleName.Should().Be("core");
+        await Assert.That(logger.ModuleName).IsEqualTo("core");
     }
 
     #endregion
@@ -99,27 +96,28 @@ public class TelemetryAdapterTests
     #region LogDebug
 
     [Test]
-    public void LogDebug_CallsSerilogWithDebugLevel()
+    public async Task LogDebug_CallsSerilogWithDebugLevel()
     {
-        var logger = new CyclotronLogger(_options, _serilogLogger, _msLogger);
+        var logger = new CyclotronLogger(_options, _serilogLoggerMock.Object, _msLoggerMock.Object);
 
         logger.LogDebug("Test debug message");
 
-        _serilogLogger.Received(1).ForContext(Arg.Any<Serilog.Core.ILogEventEnricher>());
-        _serilogLogger.Received(1).Write(LogEventLevel.Debug, (Exception?)null, "Test debug message");
+        _serilogLoggerMock.ForContext(Any<Serilog.Core.ILogEventEnricher>()).WasCalled(Times.Once);
+        _serilogLoggerMock.Write(LogEventLevel.Debug, IsNull<Exception>(), "Test debug message").WasCalled(Times.Once);
     }
 
     [Test]
-    public void LogDebug_WithCallerInfoDisabled_LogsWithoutEnrichment()
+    public async Task LogDebug_WithCallerInfoDisabled_LogsWithoutEnrichment()
     {
         _telemetryOptions.Logging.EnableCallerInfo = false;
         var options = Options.Create(_telemetryOptions);
-        var logger = new CyclotronLogger(options, _serilogLogger, _msLogger);
+        var serilogLoggerMock = Mock.Of<Serilog.ILogger>();
+        var logger = new CyclotronLogger(options, serilogLoggerMock.Object, _msLoggerMock.Object);
 
         logger.LogDebug("Test message");
 
-        _serilogLogger.DidNotReceive().ForContext(Arg.Any<Serilog.Core.ILogEventEnricher>());
-        _serilogLogger.Received(1).Write(LogEventLevel.Debug, (Exception?)null, "Test message");
+        serilogLoggerMock.ForContext(Any<Serilog.Core.ILogEventEnricher>()).WasNeverCalled();
+        serilogLoggerMock.Write(LogEventLevel.Debug, IsNull<Exception>(), "Test message").WasCalled(Times.Once);
     }
 
     #endregion
@@ -127,23 +125,23 @@ public class TelemetryAdapterTests
     #region LogInformation
 
     [Test]
-    public void LogInformation_CallsSerilogWithInformationLevel()
+    public async Task LogInformation_CallsSerilogWithInformationLevel()
     {
-        var logger = new CyclotronLogger(_options, _serilogLogger, _msLogger);
+        var logger = new CyclotronLogger(_options, _serilogLoggerMock.Object, _msLoggerMock.Object);
 
         logger.LogInformation("Test info message");
 
-        _serilogLogger.Received(1).Write(LogEventLevel.Information, (Exception?)null, "Test info message");
+        _serilogLoggerMock.Write(LogEventLevel.Information, IsNull<Exception>(), "Test info message").WasCalled(Times.Once);
     }
 
     [Test]
-    public void LogInformation_WithCallerInfoEnabled_EnrichesLog()
+    public async Task LogInformation_WithCallerInfoEnabled_EnrichesLog()
     {
-        var logger = new CyclotronLogger(_options, _serilogLogger, _msLogger);
+        var logger = new CyclotronLogger(_options, _serilogLoggerMock.Object, _msLoggerMock.Object);
 
         logger.LogInformation("Test info");
 
-        _serilogLogger.Received(1).ForContext(Arg.Any<Serilog.Core.ILogEventEnricher>());
+        _serilogLoggerMock.ForContext(Any<Serilog.Core.ILogEventEnricher>()).WasCalled(Times.Once);
     }
 
     #endregion
@@ -151,24 +149,24 @@ public class TelemetryAdapterTests
     #region LogWarning
 
     [Test]
-    public void LogWarning_CallsSerilogWithWarningLevel()
+    public async Task LogWarning_CallsSerilogWithWarningLevel()
     {
-        var logger = new CyclotronLogger(_options, _serilogLogger, _msLogger);
+        var logger = new CyclotronLogger(_options, _serilogLoggerMock.Object, _msLoggerMock.Object);
 
         logger.LogWarning("Test warning");
 
-        _serilogLogger.Received(1).Write(LogEventLevel.Warning, (Exception?)null, "Test warning");
+        _serilogLoggerMock.Write(LogEventLevel.Warning, IsNull<Exception>(), "Test warning").WasCalled(Times.Once);
     }
 
     [Test]
-    public void LogWarning_WithException_PassesExceptionToSerilog()
+    public async Task LogWarning_WithException_PassesExceptionToSerilog()
     {
-        var logger = new CyclotronLogger(_options, _serilogLogger, _msLogger);
+        var logger = new CyclotronLogger(_options, _serilogLoggerMock.Object, _msLoggerMock.Object);
         var exception = new InvalidOperationException("Test exception");
 
         logger.LogWarning("Warning with exception", exception);
 
-        _serilogLogger.Received(1).Write(LogEventLevel.Warning, exception, "Warning with exception");
+        _serilogLoggerMock.Write(LogEventLevel.Warning, exception, "Warning with exception").WasCalled(Times.Once);
     }
 
     #endregion
@@ -176,24 +174,24 @@ public class TelemetryAdapterTests
     #region LogError
 
     [Test]
-    public void LogError_CallsSerilogWithErrorLevel()
+    public async Task LogError_CallsSerilogWithErrorLevel()
     {
-        var logger = new CyclotronLogger(_options, _serilogLogger, _msLogger);
+        var logger = new CyclotronLogger(_options, _serilogLoggerMock.Object, _msLoggerMock.Object);
 
         logger.LogError("Test error");
 
-        _serilogLogger.Received(1).Write(LogEventLevel.Error, (Exception?)null, "Test error");
+        _serilogLoggerMock.Write(LogEventLevel.Error, IsNull<Exception>(), "Test error").WasCalled(Times.Once);
     }
 
     [Test]
-    public void LogError_WithException_PassesExceptionToSerilog()
+    public async Task LogError_WithException_PassesExceptionToSerilog()
     {
-        var logger = new CyclotronLogger(_options, _serilogLogger, _msLogger);
+        var logger = new CyclotronLogger(_options, _serilogLoggerMock.Object, _msLoggerMock.Object);
         var exception = new ArgumentException("Bad argument");
 
         logger.LogError("Error occurred", exception);
 
-        _serilogLogger.Received(1).Write(LogEventLevel.Error, exception, "Error occurred");
+        _serilogLoggerMock.Write(LogEventLevel.Error, exception, "Error occurred").WasCalled(Times.Once);
     }
 
     #endregion
@@ -201,24 +199,24 @@ public class TelemetryAdapterTests
     #region LogCritical
 
     [Test]
-    public void LogCritical_CallsSerilogWithFatalLevel()
+    public async Task LogCritical_CallsSerilogWithFatalLevel()
     {
-        var logger = new CyclotronLogger(_options, _serilogLogger, _msLogger);
+        var logger = new CyclotronLogger(_options, _serilogLoggerMock.Object, _msLoggerMock.Object);
 
         logger.LogCritical("Critical failure");
 
-        _serilogLogger.Received(1).Write(LogEventLevel.Fatal, (Exception?)null, "Critical failure");
+        _serilogLoggerMock.Write(LogEventLevel.Fatal, IsNull<Exception>(), "Critical failure").WasCalled(Times.Once);
     }
 
     [Test]
-    public void LogCritical_WithException_PassesExceptionToSerilog()
+    public async Task LogCritical_WithException_PassesExceptionToSerilog()
     {
-        var logger = new CyclotronLogger(_options, _serilogLogger, _msLogger);
+        var logger = new CyclotronLogger(_options, _serilogLoggerMock.Object, _msLoggerMock.Object);
         var exception = new OutOfMemoryException();
 
         logger.LogCritical("Out of memory", exception);
 
-        _serilogLogger.Received(1).Write(LogEventLevel.Fatal, exception, "Out of memory");
+        _serilogLoggerMock.Write(LogEventLevel.Fatal, exception, "Out of memory").WasCalled(Times.Once);
     }
 
     #endregion
@@ -226,15 +224,15 @@ public class TelemetryAdapterTests
     #region ILogger Implementation - BeginScope
 
     [Test]
-    public void BeginScope_DelegatesToMsLogger()
+    public async Task BeginScope_DelegatesToMsLogger()
     {
-        var logger = new CyclotronLogger(_options, _serilogLogger, _msLogger);
-        var scope = Substitute.For<IDisposable>();
-        _msLogger.BeginScope(Arg.Any<object>()).Returns(scope);
+        var logger = new CyclotronLogger(_options, _serilogLoggerMock.Object, _msLoggerMock.Object);
+        var scopeMock = Mock.Of<IDisposable>();
+        _msLoggerMock.BeginScope(Any<object>()).Returns(scopeMock.Object);
 
         var result = logger.BeginScope(new { CorrelationId = "test-123" });
 
-        result.Should().BeSameAs(scope);
+        await Assert.That(result).IsSameReferenceAs(scopeMock.Object);
     }
 
     #endregion
@@ -242,21 +240,21 @@ public class TelemetryAdapterTests
     #region ILogger Implementation - IsEnabled
 
     [Test]
-    public void IsEnabled_DelegatesToMsLogger_WhenTrue()
+    public async Task IsEnabled_DelegatesToMsLogger_WhenTrue()
     {
-        var logger = new CyclotronLogger(_options, _serilogLogger, _msLogger);
-        _msLogger.IsEnabled(LogLevel.Information).Returns(true);
+        var logger = new CyclotronLogger(_options, _serilogLoggerMock.Object, _msLoggerMock.Object);
+        _msLoggerMock.IsEnabled(LogLevel.Information).Returns(true);
 
-        logger.IsEnabled(LogLevel.Information).Should().BeTrue();
+        await Assert.That(logger.IsEnabled(LogLevel.Information)).IsTrue();
     }
 
     [Test]
-    public void IsEnabled_DelegatesToMsLogger_WhenFalse()
+    public async Task IsEnabled_DelegatesToMsLogger_WhenFalse()
     {
-        var logger = new CyclotronLogger(_options, _serilogLogger, _msLogger);
-        _msLogger.IsEnabled(LogLevel.Debug).Returns(false);
+        var logger = new CyclotronLogger(_options, _serilogLoggerMock.Object, _msLoggerMock.Object);
+        _msLoggerMock.IsEnabled(LogLevel.Debug).Returns(false);
 
-        logger.IsEnabled(LogLevel.Debug).Should().BeFalse();
+        await Assert.That(logger.IsEnabled(LogLevel.Debug)).IsFalse();
     }
 
     #endregion
@@ -264,19 +262,14 @@ public class TelemetryAdapterTests
     #region ILogger Implementation - Log<TState>
 
     [Test]
-    public void Log_DelegatesToMsLogger()
+    public async Task Log_DelegatesToMsLogger()
     {
-        var logger = new CyclotronLogger(_options, _serilogLogger, _msLogger);
+        var logger = new CyclotronLogger(_options, _serilogLoggerMock.Object, _msLoggerMock.Object);
         var eventId = new EventId(1, "TestEvent");
 
         logger.Log(LogLevel.Information, eventId, "state", null, (s, e) => s.ToString()!);
 
-        _msLogger.Received(1).Log(
-            LogLevel.Information,
-            eventId,
-            "state",
-            null,
-            Arg.Any<Func<string, Exception?, string>>());
+        _msLoggerMock.Log(Any<LogLevel>(), Any<EventId>(), Any<string>(), Any<Exception?>(), Any<Func<string, Exception?, string>>()).WasCalled(Times.Once);
     }
 
     #endregion
@@ -284,41 +277,41 @@ public class TelemetryAdapterTests
     #region Configuration Defaults
 
     [Test]
-    public void CyclotronTelemetryOptions_HasCorrectDefaults()
+    public async Task CyclotronTelemetryOptions_HasCorrectDefaults()
     {
         var options = new CyclotronTelemetryOptions();
 
-        options.ServiceName.Should().Be("CyclotronApp");
-        options.ServiceVersion.Should().Be("1.0.0");
-        options.Environment.Should().Be("development");
-        options.DefaultModule.Should().Be("core");
-        options.Logging.Should().NotBeNull();
+        await Assert.That(options.ServiceName).IsEqualTo("CyclotronApp");
+        await Assert.That(options.ServiceVersion).IsEqualTo("1.0.0");
+        await Assert.That(options.Environment).IsEqualTo("development");
+        await Assert.That(options.DefaultModule).IsEqualTo("core");
+        await Assert.That(options.Logging).IsNotNull();
     }
 
     [Test]
-    public void LoggingOptions_HasCorrectDefaults()
+    public async Task LoggingOptions_HasCorrectDefaults()
     {
         var options = new LoggingOptions();
 
-        options.MinimumLevel.Should().Be(LogLevel.Information);
-        options.EnableCallerInfo.Should().BeTrue();
-        options.OutputTemplate.Should().NotBeNullOrEmpty();
-        options.File.Should().NotBeNull();
+        await Assert.That(options.MinimumLevel).IsEqualTo(LogLevel.Information);
+        await Assert.That(options.EnableCallerInfo).IsTrue();
+        await Assert.That(options.OutputTemplate).IsNotEmpty();
+        await Assert.That(options.File).IsNotNull();
     }
 
     [Test]
-    public void FileLoggingOptions_HasCorrectDefaults()
+    public async Task FileLoggingOptions_HasCorrectDefaults()
     {
         var options = new FileLoggingOptions();
 
-        options.Enabled.Should().BeTrue();
-        options.Path.Should().Contain("CyclotronApp");
-        options.RetainedFileCountLimit.Should().Be(3);
-        options.BufferSize.Should().Be(10000);
-        options.FlushInterval.Should().Be(TimeSpan.FromSeconds(30));
-        options.MinimumLevel.Should().Be(LogLevel.Debug);
-        options.FileSizeLimitBytes.Should().Be(10 * 1024 * 1024);
-        options.RollOnFileSizeLimit.Should().BeTrue();
+        await Assert.That(options.Enabled).IsTrue();
+        await Assert.That(options.Path).Contains("CyclotronApp");
+        await Assert.That(options.RetainedFileCountLimit).IsEqualTo(3);
+        await Assert.That(options.BufferSize).IsEqualTo(10000);
+        await Assert.That(options.FlushInterval).IsEqualTo(TimeSpan.FromSeconds(30));
+        await Assert.That(options.MinimumLevel).IsEqualTo(LogLevel.Debug);
+        await Assert.That(options.FileSizeLimitBytes).IsEqualTo(10 * 1024 * 1024);
+        await Assert.That(options.RollOnFileSizeLimit).IsTrue();
     }
 
     #endregion
@@ -326,27 +319,28 @@ public class TelemetryAdapterTests
     #region CallerInfo Enrichment
 
     [Test]
-    public void LogDebug_WithCallerInfoEnabled_UsesForContext()
+    public async Task LogDebug_WithCallerInfoEnabled_UsesForContext()
     {
         _telemetryOptions.Logging.EnableCallerInfo = true;
         var options = Options.Create(_telemetryOptions);
-        var logger = new CyclotronLogger(options, _serilogLogger, _msLogger);
+        var logger = new CyclotronLogger(options, _serilogLoggerMock.Object, _msLoggerMock.Object);
 
         logger.LogDebug("test");
 
-        _serilogLogger.Received(1).ForContext(Arg.Any<Serilog.Core.ILogEventEnricher>());
+        _serilogLoggerMock.ForContext(Any<Serilog.Core.ILogEventEnricher>()).WasCalled(Times.Once);
     }
 
     [Test]
-    public void LogInformation_WithCallerInfoDisabled_SkipsForContext()
+    public async Task LogInformation_WithCallerInfoDisabled_SkipsForContext()
     {
         _telemetryOptions.Logging.EnableCallerInfo = false;
         var options = Options.Create(_telemetryOptions);
-        var logger = new CyclotronLogger(options, _serilogLogger, _msLogger);
+        var serilogLoggerMock = Mock.Of<Serilog.ILogger>();
+        var logger = new CyclotronLogger(options, serilogLoggerMock.Object, _msLoggerMock.Object);
 
         logger.LogInformation("test");
 
-        _serilogLogger.DidNotReceive().ForContext(Arg.Any<Serilog.Core.ILogEventEnricher>());
+        serilogLoggerMock.ForContext(Any<Serilog.Core.ILogEventEnricher>()).WasNeverCalled();
     }
 
     #endregion

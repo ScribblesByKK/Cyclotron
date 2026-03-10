@@ -1,6 +1,5 @@
 using Cyclotron.Tests.Integration.Fixtures;
 using Cyclotron.Tests.TestHelpers;
-using AwesomeAssertions;
 
 namespace Cyclotron.Tests.Integration.FileSystemAdapter;
 
@@ -33,7 +32,7 @@ public class FileSystemAdapterIntegrationTests
         await File.WriteAllTextAsync(filePath, content);
         var readContent = await File.ReadAllTextAsync(filePath);
 
-        readContent.Should().Be(content);
+        await Assert.That(readContent).IsEqualTo(content);
     }
 
     [Test]
@@ -45,7 +44,7 @@ public class FileSystemAdapterIntegrationTests
         await File.WriteAllTextAsync(filePath, content, System.Text.Encoding.UTF8);
         var readContent = await File.ReadAllTextAsync(filePath, System.Text.Encoding.UTF8);
 
-        readContent.Should().Be(content);
+        await Assert.That(readContent).IsEqualTo(content);
     }
 
     [Test]
@@ -57,7 +56,7 @@ public class FileSystemAdapterIntegrationTests
         await File.WriteAllBytesAsync(filePath, bytes);
         var readBytes = await File.ReadAllBytesAsync(filePath);
 
-        readBytes.Should().BeEquivalentTo(bytes);
+        await Assert.That(readBytes).IsEquivalentTo(bytes);
     }
 
     [Test]
@@ -69,7 +68,7 @@ public class FileSystemAdapterIntegrationTests
         await File.WriteAllBytesAsync(filePath, bytes);
         var readBytes = await File.ReadAllBytesAsync(filePath);
 
-        readBytes.Should().BeEmpty();
+        await Assert.That(readBytes).IsEmpty();
     }
 
     #endregion
@@ -82,15 +81,15 @@ public class FileSystemAdapterIntegrationTests
         var filePath = _fixture.GetTempFilePath("exists.txt");
         await File.WriteAllTextAsync(filePath, "content");
 
-        File.Exists(filePath).Should().BeTrue();
+        await Assert.That(File.Exists(filePath)).IsTrue();
     }
 
     [Test]
-    public void FileExists_ReturnsFalse_WhenFileDoesNotExist()
+    public async Task FileExists_ReturnsFalse_WhenFileDoesNotExist()
     {
         var filePath = _fixture.GetTempFilePath("nonexistent.txt");
 
-        File.Exists(filePath).Should().BeFalse();
+        await Assert.That(File.Exists(filePath)).IsFalse();
     }
 
     #endregion
@@ -98,35 +97,35 @@ public class FileSystemAdapterIntegrationTests
     #region Directory Operations
 
     [Test]
-    public void CreateDirectory_CreatesNestedDirectories()
+    public async Task CreateDirectory_CreatesNestedDirectories()
     {
         var dirPath = Path.Combine(_fixture.RootPath, "level1", "level2", "level3");
 
         Directory.CreateDirectory(dirPath);
 
-        Directory.Exists(dirPath).Should().BeTrue();
+        await Assert.That(Directory.Exists(dirPath)).IsTrue();
     }
 
     [Test]
-    public void CreateDirectory_IsIdempotent()
+    public async Task CreateDirectory_IsIdempotent()
     {
         var dirPath = _fixture.GetTempDirectoryPath("idempotent");
 
         Directory.CreateDirectory(dirPath);
         Directory.CreateDirectory(dirPath);
 
-        Directory.Exists(dirPath).Should().BeTrue();
+        await Assert.That(Directory.Exists(dirPath)).IsTrue();
     }
 
     [Test]
-    public void DeleteDirectory_RemovesEmptyDirectory()
+    public async Task DeleteDirectory_RemovesEmptyDirectory()
     {
         var dirPath = _fixture.GetTempDirectoryPath("todelete");
         Directory.CreateDirectory(dirPath);
 
         Directory.Delete(dirPath);
 
-        Directory.Exists(dirPath).Should().BeFalse();
+        await Assert.That(Directory.Exists(dirPath)).IsFalse();
     }
 
     [Test]
@@ -139,7 +138,7 @@ public class FileSystemAdapterIntegrationTests
 
         Directory.Delete(dirPath, recursive: true);
 
-        Directory.Exists(dirPath).Should().BeFalse();
+        await Assert.That(Directory.Exists(dirPath)).IsFalse();
     }
 
     [Test]
@@ -153,18 +152,18 @@ public class FileSystemAdapterIntegrationTests
 
         var txtFiles = Directory.EnumerateFiles(dirPath, "*.txt").ToList();
 
-        txtFiles.Should().HaveCount(2);
+        await Assert.That(txtFiles).Count().IsEqualTo(2);
     }
 
     [Test]
-    public void EnumerateFiles_EmptyDirectory_ReturnsEmpty()
+    public async Task EnumerateFiles_EmptyDirectory_ReturnsEmpty()
     {
         var dirPath = _fixture.GetTempDirectoryPath("empty");
         Directory.CreateDirectory(dirPath);
 
         var files = Directory.EnumerateFiles(dirPath).ToList();
 
-        files.Should().BeEmpty();
+        await Assert.That(files).IsEmpty();
     }
 
     [Test]
@@ -178,7 +177,7 @@ public class FileSystemAdapterIntegrationTests
 
         var files = Directory.EnumerateFiles(dirPath, "*.*", SearchOption.AllDirectories).ToList();
 
-        files.Should().HaveCount(2);
+        await Assert.That(files).Count().IsEqualTo(2);
     }
 
     #endregion
@@ -195,8 +194,8 @@ public class FileSystemAdapterIntegrationTests
 
         File.Copy(sourcePath, destPath);
 
-        File.Exists(destPath).Should().BeTrue();
-        (await File.ReadAllTextAsync(destPath)).Should().Be(content);
+        await Assert.That(File.Exists(destPath)).IsTrue();
+        await Assert.That(await File.ReadAllTextAsync(destPath)).IsEqualTo(content);
     }
 
     [Test]
@@ -208,8 +207,8 @@ public class FileSystemAdapterIntegrationTests
 
         File.Move(sourcePath, destPath);
 
-        File.Exists(sourcePath).Should().BeFalse();
-        File.Exists(destPath).Should().BeTrue();
+        await Assert.That(File.Exists(sourcePath)).IsFalse();
+        await Assert.That(File.Exists(destPath)).IsTrue();
     }
 
     [Test]
@@ -220,7 +219,7 @@ public class FileSystemAdapterIntegrationTests
 
         File.Delete(filePath);
 
-        File.Exists(filePath).Should().BeFalse();
+        await Assert.That(File.Exists(filePath)).IsFalse();
     }
 
     [Test]
@@ -236,9 +235,9 @@ public class FileSystemAdapterIntegrationTests
 
         File.Move(sourcePath, destPath);
 
-        File.Exists(sourcePath).Should().BeFalse();
-        File.Exists(destPath).Should().BeTrue();
-        (await File.ReadAllTextAsync(destPath)).Should().Be("cross-dir move");
+        await Assert.That(File.Exists(sourcePath)).IsFalse();
+        await Assert.That(File.Exists(destPath)).IsTrue();
+        await Assert.That(await File.ReadAllTextAsync(destPath)).IsEqualTo("cross-dir move");
     }
 
     #endregion
@@ -251,8 +250,8 @@ public class FileSystemAdapterIntegrationTests
         var filePath = _fixture.GetTempFilePath("file with spaces.txt");
         await File.WriteAllTextAsync(filePath, "content");
 
-        File.Exists(filePath).Should().BeTrue();
-        (await File.ReadAllTextAsync(filePath)).Should().Be("content");
+        await Assert.That(File.Exists(filePath)).IsTrue();
+        await Assert.That(await File.ReadAllTextAsync(filePath)).IsEqualTo("content");
     }
 
     [Test]
@@ -261,8 +260,8 @@ public class FileSystemAdapterIntegrationTests
         var filePath = _fixture.GetTempFilePath("файл_données_数据.txt");
         await File.WriteAllTextAsync(filePath, "unicode content");
 
-        File.Exists(filePath).Should().BeTrue();
-        (await File.ReadAllTextAsync(filePath)).Should().Be("unicode content");
+        await Assert.That(File.Exists(filePath)).IsTrue();
+        await Assert.That(await File.ReadAllTextAsync(filePath)).IsEqualTo("unicode content");
     }
 
     #endregion
@@ -270,23 +269,23 @@ public class FileSystemAdapterIntegrationTests
     #region Error Scenarios
 
     [Test]
-    public void ReadNonExistentFile_ThrowsFileNotFoundException()
+    public async Task ReadNonExistentFile_ThrowsFileNotFoundException()
     {
         var filePath = _fixture.GetTempFilePath("nonexistent.txt");
 
         var act = () => File.ReadAllText(filePath);
 
-        act.Should().Throw<FileNotFoundException>();
+        await Assert.That(act).Throws<FileNotFoundException>();
     }
 
     [Test]
-    public void DeleteNonExistentFile_DoesNotThrow()
+    public async Task DeleteNonExistentFile_DoesNotThrow()
     {
         var filePath = _fixture.GetTempFilePath("nonexistent.txt");
 
         var act = () => File.Delete(filePath);
 
-        act.Should().NotThrow();
+        await Assert.That(act).ThrowsNothing();
     }
 
     #endregion
@@ -305,7 +304,7 @@ public class FileSystemAdapterIntegrationTests
         await Task.WhenAll(tasks);
 
         var files = Directory.EnumerateFiles(_fixture.RootPath, "parallel_*.txt").ToList();
-        files.Should().HaveCount(50);
+        await Assert.That(files).Count().IsEqualTo(50);
     }
 
     [Test]
@@ -322,7 +321,7 @@ public class FileSystemAdapterIntegrationTests
         });
 
         var results = await Task.WhenAll(tasks);
-        results.Should().AllBe(content);
+        await Assert.That(results.All(r => r == content)).IsTrue();
     }
 
     #endregion
@@ -330,33 +329,33 @@ public class FileSystemAdapterIntegrationTests
     #region TempFileSystemFixture Tests
 
     [Test]
-    public void Fixture_CreatesRootDirectory()
+    public async Task Fixture_CreatesRootDirectory()
     {
-        Directory.Exists(_fixture.RootPath).Should().BeTrue();
+        await Assert.That(Directory.Exists(_fixture.RootPath)).IsTrue();
     }
 
     [Test]
-    public void Fixture_GetTempFilePath_ReturnsPathInRootDirectory()
+    public async Task Fixture_GetTempFilePath_ReturnsPathInRootDirectory()
     {
         var path = _fixture.GetTempFilePath();
 
-        Path.GetDirectoryName(path).Should().Be(_fixture.RootPath);
+        await Assert.That(Path.GetDirectoryName(path)).IsEqualTo(_fixture.RootPath);
     }
 
     [Test]
-    public void Fixture_GetTempFilePath_WithCustomName_UsesProvidedName()
+    public async Task Fixture_GetTempFilePath_WithCustomName_UsesProvidedName()
     {
         var path = _fixture.GetTempFilePath("custom.txt");
 
-        Path.GetFileName(path).Should().Be("custom.txt");
+        await Assert.That(Path.GetFileName(path)).IsEqualTo("custom.txt");
     }
 
     [Test]
-    public void Fixture_GetTempDirectoryPath_ReturnsPathInRootDirectory()
+    public async Task Fixture_GetTempDirectoryPath_ReturnsPathInRootDirectory()
     {
         var path = _fixture.GetTempDirectoryPath();
 
-        Path.GetDirectoryName(path).Should().Be(_fixture.RootPath);
+        await Assert.That(Path.GetDirectoryName(path)).IsEqualTo(_fixture.RootPath);
     }
 
     #endregion
