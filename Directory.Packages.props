@@ -23,6 +23,6 @@
     <PackageVersion Include="AwesomeAssertions" Version="9.4.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
     <PackageVersion Include="Coverlet.Collector" Version="6.0.4" />
-    <PackageVersion Include="Coverlet.MSBuild" Version="6.0.4" />
+    <PackageVersion Include="Coverlet.MSBuild" Version="8.0.0" />
   </ItemGroup>
 </Project>
