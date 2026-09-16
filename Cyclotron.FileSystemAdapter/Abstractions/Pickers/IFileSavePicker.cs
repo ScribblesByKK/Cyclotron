@@ -42,6 +42,6 @@ public interface IFileSavePicker
     /// Asynchronously displays a dialog to pick a save file location and name.
     /// </summary>
     /// <returns>A task that represents the asynchronous operation. The result contains the file location for saving, or null if the operation was canceled.</returns>
-    Task<IFile> PickSaveFileAsync();
+    Task<IFile?> PickSaveFileAsync();
 }
 

@@ -4,7 +4,7 @@ using Cyclotron.Tests.Integration.Fixtures;
 using Cyclotron.Tests.TestHelpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Cyclotron.Extensions.DependencyInjection;
+using Cyclotron.Telemetry.DependencyInjection;
 
 namespace Cyclotron.Tests.Integration.Telemetry;
 

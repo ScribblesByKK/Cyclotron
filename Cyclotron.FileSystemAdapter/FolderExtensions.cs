@@ -95,7 +95,7 @@ public static class FolderExtensions
     /// <returns>A task that represents the asynchronous operation. The result contains a read-only list of files.</returns>
     public static Task<IReadOnlyList<IFile>> GetFilesAsync(this IFolder folder)
     {
-        return _folderHandler.GetFileAsync(folder);
+        return _folderHandler.GetFilesAsync(folder);
     }
 
     /// <summary>

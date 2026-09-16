@@ -75,20 +75,17 @@ public interface IUsecaseResponse
 public class ErrorResponse(IUsecaseRequest request, ErrorType errorType, Exception exception)
 {
     /// <summary>
-    /// Gets or sets the request associated with this response.
+    /// Gets the request associated with this response.
     /// </summary>
-    public IUsecaseRequest Request => _request;
-    protected readonly IUsecaseRequest _request = request;
+    public IUsecaseRequest Request { get; } = request;
 
     /// <summary>
-    /// Gets or sets the type of error.
+    /// Gets the type of error.
     /// </summary>
-    public ErrorType ErrorType => _errorType;
-    protected readonly ErrorType _errorType = errorType;
+    public ErrorType ErrorType { get; } = errorType;
 
     /// <summary>
-    /// Gets or sets the exception associated with the error.
+    /// Gets the exception associated with the error.
     /// </summary>
-    public Exception Exception => _exception;
-    protected readonly Exception _exception = exception;
+    public Exception Exception { get; } = exception;
 }

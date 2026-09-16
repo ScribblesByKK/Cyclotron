@@ -61,7 +61,7 @@ public interface IFolderHandler
     /// </summary>
     /// <param name="folder">The folder to search.</param>
     /// <returns>A task that represents the asynchronous operation. The result contains a read-only list of files.</returns>
-    Task<IReadOnlyList<IFile>> GetFileAsync(IFolder folder);
+    Task<IReadOnlyList<IFile>> GetFilesAsync(IFolder folder);
 
     /// <summary>
     /// Asynchronously retrieves a subfolder from the specified folder by name.

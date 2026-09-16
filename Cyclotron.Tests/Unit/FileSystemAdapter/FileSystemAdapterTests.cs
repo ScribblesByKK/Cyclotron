@@ -1,7 +1,7 @@
 using Cyclotron.FileSystemAdapter;
 using Cyclotron.FileSystemAdapter.Abstractions.Handlers;
 using Cyclotron.FileSystemAdapter.Abstractions.Models;
-using Cyclotron.Extensions.DepepndencyInjection;
+using Cyclotron.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Cyclotron.Tests.Unit.FileSystemAdapter;
@@ -334,13 +334,13 @@ public class FileSystemAdapterTests
     }
 
     [Test]
-    public async Task GetFileAsync_AllFiles_ReturnsFileList()
+    public async Task GetFilesAsync_AllFiles_ReturnsFileList()
     {
         var secondFile = Mock.Of<IFile>();
         var files = new List<IFile> { _mockFile.Object, secondFile.Object };
-        _folderHandler.GetFileAsync(Any<IFolder>()).Returns(files);
+        _folderHandler.GetFilesAsync(Any<IFolder>()).Returns(files);
 
-        var result = await _folderHandler.Object.GetFileAsync(_mockFolder.Object);
+        var result = await _folderHandler.Object.GetFilesAsync(_mockFolder.Object);
 
         await Assert.That(result).Count().IsEqualTo(2);
         await Assert.That(result).Contains(_mockFile.Object);

@@ -1,11 +1,11 @@
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Cyclotron.Extensions.DepepndencyInjection;
+namespace Cyclotron.Extensions.DependencyInjection;
 
 /// <summary>
 /// Extension methods for <see cref="IServiceCollection"/> used in dependency injection setup.
 /// </summary>
-public static class ServiceCollectionExtensions
+public static partial class ServiceCollectionExtensions
 {
     /// <summary>
     /// Ensures that a service of type <typeparamref name="TService"/> exists in the service collection.

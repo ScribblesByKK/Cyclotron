@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Cyclotron.Extensions.DependencyInjection;
+namespace Cyclotron.Telemetry.DependencyInjection;
 
 /// <summary>
 /// Extension methods for adding Cyclotron Telemetry services to the DI container.
@@ -21,7 +21,7 @@ public static class ServiceCollectionExtensions
         var options = new CyclotronTelemetryOptions();
         configure(options);
 
-        services.Configure(configure);
+        services.Configure<CyclotronTelemetryOptions>(configure);
 
         ConfigureLogging(services, options);
 

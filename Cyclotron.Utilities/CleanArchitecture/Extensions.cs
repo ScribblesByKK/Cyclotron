@@ -56,7 +56,7 @@ public static class CallbackExtensions
     /// </remarks>
     public static void OnError<R>(this ICallback<R> callback, IUsecaseRequest request, Exception ex) where R : IUsecaseResponse
     {
-        if (callback == null) { return; }
+        if (callback is null) { return; }
 
         switch (ex)
         {

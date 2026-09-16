@@ -90,6 +90,6 @@ public abstract class UsecaseBase<TRequest, TResponse>(TRequest request, ICallba
                 // Handle any exceptions and invoke the error callback
                 Callback?.OnError(Request, ex);
             }
-        }).ConfigureAwait(false);
+        });
     }
 }

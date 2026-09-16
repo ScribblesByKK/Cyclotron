@@ -11,9 +11,9 @@ namespace Cyclotron.FileSystemAdapter;
 /// </remarks>
 public sealed partial class FileSystemProvider
 {
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IServiceProvider? _serviceProvider;
 #pragma warning disable IDE0044 // Add readonly modifier
-    private static IServiceProvider? _initServiceProvider = default!;
+    private static IServiceProvider? _initServiceProvider = null;
 #pragma warning restore IDE0044 // Add readonly modifier
 
     /// <summary>
@@ -28,7 +28,7 @@ public sealed partial class FileSystemProvider
     /// <remarks>
     /// The constructor is private to enforce the singleton pattern.
     /// </remarks>
-    private FileSystemProvider(IServiceProvider serviceProvider)
+    private FileSystemProvider(IServiceProvider? serviceProvider)
     {
         _serviceProvider = serviceProvider;
     }
@@ -73,9 +73,7 @@ public sealed partial class FileSystemProvider
         /// The singleton instance of FileSystemProvider.
         /// </summary>
         //Marked as internal as it will be accessed from the enclosing class. It doesn't raise any problem, as the class itself is private.
-#pragma warning disable CS8604 // Possible null reference argument.
         internal static readonly FileSystemProvider Instance = new(_initServiceProvider);
-#pragma warning restore CS8604 // Possible null reference argument.
 
         /// <summary>
         /// Initializes the FileSystemProviderSingleton class.

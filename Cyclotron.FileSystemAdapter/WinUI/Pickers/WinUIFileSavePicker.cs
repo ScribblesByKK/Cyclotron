@@ -32,12 +32,13 @@ internal class WinUIFileSavePicker : IFileSavePicker
     }
 
     /// <inheritdoc/>
-    public async Task<IFile> PickSaveFileAsync()
+    public async Task<IFile?> PickSaveFileAsync()
     {
         var fileSavePicker = new Microsoft.Windows.Storage.Pickers.FileSavePicker(WindowUtil.GetActiveWindowId())
         {
             CommitButtonText = CommitButtonText,
             SuggestedFileName = SuggestedFileName,
+            SuggestedFolder = Path.GetDirectoryName(SuggestedSaveFile.Path) ?? string.Empty,
             SuggestedStartLocation = (Microsoft.Windows.Storage.Pickers.PickerLocationId)SuggestedStartLocation
         };
 
@@ -49,7 +50,7 @@ internal class WinUIFileSavePicker : IFileSavePicker
         var fileResult = await fileSavePicker.PickSaveFileAsync();
         if (fileResult == null)
         {
-            return default!;
+            return null;
         }
 
         var file = await Windows.Storage.StorageFile.GetFileFromPathAsync(fileResult.Path);

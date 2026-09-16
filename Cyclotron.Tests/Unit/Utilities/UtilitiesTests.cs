@@ -392,9 +392,9 @@ public class UtilitiesTests
 
         usecase.Execute();
 
-        // Give a short window for Task.Run to potentially execute if it was erroneously called
-        var completed = await Task.WhenAny(tcs.Task, Task.Delay(200));
-        await Assert.That(ReferenceEquals(completed, tcs.Task)).IsFalse();
+        // The cache-hit path returns synchronously before any background task is scheduled,
+        // so ActionAsync can be verified as not having run without any timing-based wait.
+        await Assert.That(tcs.Task.IsCompleted).IsFalse();
     }
 
     #endregion

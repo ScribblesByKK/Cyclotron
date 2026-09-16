@@ -99,7 +99,7 @@ internal class WinUIFolderHandler : IFolderHandler
     }
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyList<IFile>> GetFileAsync(IFolder folder)
+    public async Task<IReadOnlyList<IFile>> GetFilesAsync(IFolder folder)
     {
         if (folder is not WinUIFolder winUIFolder)
         {
